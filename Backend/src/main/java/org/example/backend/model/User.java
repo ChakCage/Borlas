@@ -3,7 +3,7 @@ package org.example.backend.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.*;
 
 @Data
@@ -15,26 +15,37 @@ public class User {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    /* ======= обязательные поля ======= */
-    @Column(nullable = false, length = 50, unique = true)
-    private String username;
+    /* ───────── обязательные ───────── */
+    @Column(nullable = false, length = 30, unique = true)
+    private String username;                 // 3‑30 символов a‑z,0‑9,_‑
 
     @Column(nullable = false, unique = true)
-    private String email;
+    private String email;                    // валидный e‑mail
 
-    /** храним уже хэш, а не сырой пароль */
-    @Column(nullable = false)
-    private String passwordHash;
+    @Column(nullable = false, length = 100)
+    private String passwordHash;             // хранится BCrypt‑хеш
 
-    /* ======= метаданные ======= */
-    @Column(name = "created_date", updatable = false)
-    private LocalDateTime createdDate = LocalDateTime.now();
+    /* ───────── необязательные ─────── */
+    @Column(length = 500)
+    private String bio;                      // ≤ 500 симв.
 
-    @Column(name = "updated_date")
-    private LocalDateTime updatedDate;
+    private String avatarUrl;                // ссылка/путь к файлу
 
-    /* ======= связи ======= */
-    // 1‑ко‑многим: пользователь → его посты
-    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
+    private LocalDate birthDate;             // дата в прошлом
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;                   // MALE | FEMALE
+
+    /* ───────── системные ──────────── */
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    /* ───────── связи ──────────────── */
+    @OneToMany(mappedBy = "author",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 }
