@@ -9,13 +9,8 @@ import java.util.UUID;
 
 @Data
 public class UserResponseDto {
-    private UUID id;
-    private String username;
-    private String email;
-    private String bio;
-    private String avatarUrl;
-    private LocalDate birthDate;
-    private String gender;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private UUID id;  private String username; private String email;
+    private String bio; private String avatarUrl;
+    private LocalDate birthDate; private String gender;
+    private LocalDateTime createdAt; private LocalDateTime updatedAt;
 }
