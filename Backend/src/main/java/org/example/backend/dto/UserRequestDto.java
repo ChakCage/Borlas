@@ -1,31 +1,40 @@
 package org.example.backend.dto;
 
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
-public class UserResponseDto {
+public class UserRequestDto {
 
-    private UUID id;
+    @NotBlank
+    @Size(min = 3, max = 30)
+    @Pattern(regexp = "^[a-z0-9_-]+$", message = "only a-z, 0-9, _ and -")
     private String username;
+
+    @NotBlank @Email
     private String email;
+
+    @NotBlank @Size(min = 6, max = 100)
+    private String password;
+
+    @Size(max = 500)
     private String bio;
     private String avatarUrl;
+
+    @Past
     private LocalDate birthDate;
+
+    @Pattern(regexp = "MALE|FEMALE")
     private String gender;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 
-
-
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
 
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
     public String getEmail() { return email; }
     public void setEmail(String email) { this.email = email; }
+
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
 
     public String getBio() { return bio; }
     public void setBio(String bio) { this.bio = bio; }
@@ -38,10 +47,4 @@ public class UserResponseDto {
 
     public String getGender() { return gender; }
     public void setGender(String gender) { this.gender = gender; }
-
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

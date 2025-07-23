@@ -1,67 +1,72 @@
 package org.example.backend.mapper;
 
-import org.example.backend.dto.*;
+import org.example.backend.dto.UserRequestDto;
+import org.example.backend.dto.UserResponseDto;
 import org.example.backend.model.*;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 
-
-
-
-
 public final class UserMapper {
 
-    private static final BCryptPasswordEncoder enc = new BCryptPasswordEncoder();
+    private static final BCryptPasswordEncoder ENC = new BCryptPasswordEncoder();
     private UserMapper() {}
 
-    /* ───────── signup / create ───────── */
-    public static User toEntity(UserDto d) {                 // для create
+
+    public static User toEntity(UserRequestDto dto) {
         User u = new User();
-        u.setUsername(d.getUsername());
-        u.setEmail(d.getEmail());
-        u.setPasswordHash(enc.encode(d.getPassword()));
+        copyIntoEntity(u, dto, true);
         return u;
     }
 
-    public static User toEntity(UserSignupDto d) {           // для signup
-        User u = new User();
-        u.setUsername(d.getUsername());
-        u.setEmail(d.getEmail());
-        u.setPasswordHash(enc.encode(d.getPassword()));
-        u.setBio(d.getBio());
-        u.setAvatarUrl(d.getAvatarUrl());
-        if (d.getBirthDate()!=null) u.setBirthDate(d.getBirthDate());
-        if (d.getGender()!=null)    u.setGender(Gender.valueOf(d.getGender()));
-        return u;
-    }
 
-    /* ───────── PUT full update ───────── */
-    public static void update(User u, UserDto d){
-        u.setUsername(d.getUsername());
-        u.setEmail(d.getEmail());
-        u.setPasswordHash(enc.encode(d.getPassword()));
+    public static void update(User u, UserRequestDto dto) {
+        copyIntoEntity(u, dto, true);
         u.setUpdatedAt(LocalDateTime.now());
     }
 
-    /* ───────── PATCH profile ─────────── */
-    public static void patch(User u, UserPatchDto d){
-        if (d.getBio()!=null)        u.setBio(d.getBio());
-        if (d.getAvatarUrl()!=null)  u.setAvatarUrl(d.getAvatarUrl());
-        if (d.getBirthDate()!=null)  u.setBirthDate(d.getBirthDate());
-        if (d.getGender()!=null)     u.setGender(Gender.valueOf(d.getGender()));
+
+    public static void patch(User u, UserRequestDto dto) {
+        copyIntoEntity(u, dto, false);
         u.setUpdatedAt(LocalDateTime.now());
     }
 
-    /* ───────── entity → response ─────── */
-    public static UserResponseDto toDto(User u){
+
+    public static UserResponseDto toDto(User u) {
         UserResponseDto r = new UserResponseDto();
-        r.setId(u.getId()); r.setUsername(u.getUsername()); r.setEmail(u.getEmail());
-        r.setBio(u.getBio()); r.setAvatarUrl(u.getAvatarUrl());
+        r.setId(u.getId());
+        r.setUsername(u.getUsername());
+        r.setEmail(u.getEmail());
+        r.setBio(u.getBio());
+        r.setAvatarUrl(u.getAvatarUrl());
         r.setBirthDate(u.getBirthDate());
-        if (u.getGender()!=null) r.setGender(u.getGender().name());
-        r.setCreatedAt(u.getCreatedAt()); r.setUpdatedAt(u.getUpdatedAt());
+        if (u.getGender() != null) r.setGender(u.getGender().name());
+        r.setCreatedAt(u.getCreatedAt());
+        r.setUpdatedAt(u.getUpdatedAt());
         return r;
     }
-}
 
+
+    private static void copyIntoEntity(User u, UserRequestDto d, boolean overwriteNull) {
+
+        if (overwriteNull || d.getUsername()   != null) u.setUsername(d.getUsername());
+        if (overwriteNull || d.getEmail()      != null) u.setEmail(d.getEmail());
+
+        if (overwriteNull || d.getPassword()   != null) {
+            String raw = d.getPassword();
+            if (raw != null) u.setPasswordHash(ENC.encode(raw));
+            else if (overwriteNull) u.setPasswordHash(null);
+        }
+
+        if (overwriteNull || d.getBio()        != null) u.setBio(d.getBio());
+        if (overwriteNull || d.getAvatarUrl()  != null) u.setAvatarUrl(d.getAvatarUrl());
+        if (overwriteNull || d.getBirthDate()  != null) u.setBirthDate(d.getBirthDate());
+
+        if (overwriteNull || d.getGender()     != null) {
+            if (d.getGender() != null)
+                u.setGender(Gender.valueOf(d.getGender()));
+            else if (overwriteNull)
+                u.setGender(null);
+        }
+    }
+}

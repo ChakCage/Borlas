@@ -2,9 +2,6 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.PostDto;
-import org.example.backend.dto.PostResponseDto;
-import org.example.backend.mapper.PostMapper;
 import org.example.backend.model.Post;
 import org.example.backend.model.User;
 import org.example.backend.repository.PostRepository;
@@ -25,40 +22,53 @@ public class PostController {
     private final PostRepository postRepo;
     private final UserRepository userRepo;
 
+
     @PostMapping
-    public ResponseEntity<PostResponseDto> create(@Valid @RequestBody PostDto dto,
-                                                  @AuthenticationPrincipal UserDetails ud){
+    public ResponseEntity<Post> create(@Valid @RequestBody Post post,
+                                       @AuthenticationPrincipal UserDetails ud) {
+
         User author = userRepo.findByUsername(ud.getUsername()).orElseThrow();
-        Post saved = postRepo.save(PostMapper.toEntity(dto, author));
-        return ResponseEntity.status(HttpStatus.CREATED).body(PostMapper.toDto(saved));
+        post.setAuthor(author);
+        Post saved = postRepo.save(post);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
+
 
     @GetMapping
-    public List<PostResponseDto> getAll() {
-        return postRepo.findAll().stream().map(PostMapper::toDto).toList();
+    public ResponseEntity<List<Post>> getAll() {
+        return ResponseEntity.ok(postRepo.findAll());
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponseDto> getById(@PathVariable UUID id){
+    public ResponseEntity<Post> getById(@PathVariable UUID id) {
         return postRepo.findById(id)
-                .map(p->ResponseEntity.ok(PostMapper.toDto(p)))
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<PostResponseDto> update(@PathVariable UUID id,
-                                                  @Valid @RequestBody PostDto dto){
+    public ResponseEntity<Post> update(@PathVariable UUID id,
+                                       @Valid @RequestBody Post body) {
+
         return postRepo.findById(id)
-                .map(p->{
-                    PostMapper.update(p,dto);
-                    return ResponseEntity.ok(PostMapper.toDto(postRepo.save(p)));
+                .map(p -> {
+                    p.setTitle(body.getTitle());
+                    p.setContent(body.getContent());
+                    p.setUpdatedDate(LocalDateTime.now());
+                    return ResponseEntity.ok(postRepo.save(p));
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id){
-        if(postRepo.existsById(id)){ postRepo.deleteById(id); return ResponseEntity.noContent().build();}
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        if (postRepo.existsById(id)) {
+            postRepo.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }

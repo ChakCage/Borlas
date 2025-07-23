@@ -2,7 +2,8 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.*;
+import org.example.backend.dto.UserRequestDto;
+import org.example.backend.dto.UserResponseDto;
 import org.example.backend.mapper.UserMapper;
 import org.example.backend.model.User;
 import org.example.backend.repository.UserRepository;
@@ -21,31 +22,37 @@ public class UserController {
 
     private final UserRepository repo;
 
-    /* ---------- CREATE (admin) ---------- */
+
     @PostMapping
-    public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserDto dto) {
-        if (repo.existsByEmail(dto.getEmail())) return ResponseEntity.status(HttpStatus.CONFLICT).build();
+    public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserRequestDto dto) {
+        if (repo.existsByEmail(dto.getEmail()))
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
         User saved = repo.save(UserMapper.toEntity(dto));
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(saved));
     }
 
-    /* ---------- SIGN‑UP (public) -------- */
+
     @PostMapping("/auth/signup")
-    public ResponseEntity<UserResponseDto> signup(@Valid @RequestBody UserSignupDto dto) {
+    public ResponseEntity<UserResponseDto> signup(@Valid @RequestBody UserRequestDto dto) {
         if (repo.existsByEmail(dto.getEmail()) || repo.existsByUsername(dto.getUsername()))
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
+
         User saved = repo.save(UserMapper.toEntity(dto));
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(saved));
     }
 
-    /* ---------- READ ALL ---------------- */
+
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAll() {
-        var list = repo.findAll().stream().map(UserMapper::toDto).collect(Collectors.toList());
+        List<UserResponseDto> list = repo.findAll()
+                .stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
 
-    /* ---------- READ BY ID -------------- */
+
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getById(@PathVariable UUID id) {
         return repo.findById(id)
@@ -53,10 +60,10 @@ public class UserController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /* ---------- PUT full update --------- */
+
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> update(@PathVariable UUID id,
-                                                  @Valid @RequestBody UserDto dto) {
+                                                  @Valid @RequestBody UserRequestDto dto) {
         return repo.findById(id)
                 .map(u -> {
                     UserMapper.update(u, dto);
@@ -65,19 +72,22 @@ public class UserController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    /* ---------- PATCH own profile ------- */
+
     @PatchMapping("/me")
     public ResponseEntity<UserResponseDto> patchMe(@AuthenticationPrincipal UserDetails ud,
-                                                   @Valid @RequestBody UserPatchDto dto) {
+                                                   @RequestBody UserRequestDto dto) {
         User u = repo.findByUsername(ud.getUsername()).orElseThrow();
         UserMapper.patch(u, dto);
         return ResponseEntity.ok(UserMapper.toDto(repo.save(u)));
     }
 
-    /* ---------- DELETE ------------------ */
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        if (repo.existsById(id)) { repo.deleteById(id); return ResponseEntity.noContent().build(); }
+        if (repo.existsById(id)) {
+            repo.deleteById(id);
+            return ResponseEntity.noContent().build();
+        }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 }
