@@ -1,0 +1,9 @@
+.footer {
+    background: #282c34;
+}
+
+.footer__text {
+    font-weight: bold;
+    font-size: 28px;
+    color: aquamarine;
+}
