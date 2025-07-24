@@ -1,0 +1,11 @@
+.mainView {
+    display: flow-root;
+    background: gold;
+    padding: 0;
+    height: 100vh;
+}
+
+.mainView__title {
+    font-weight: bold;
+    color: coral;
+}
