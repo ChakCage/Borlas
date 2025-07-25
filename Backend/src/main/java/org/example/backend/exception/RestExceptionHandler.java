@@ -1,0 +1,38 @@
+package org.example.backend.exception;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.*;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.*;
+
+@RestControllerAdvice
+public class RestExceptionHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationException(MethodArgumentNotValidException ex) {
+        Map<String, Object> body = new HashMap<>();
+        List<Map<String, String>> errors = new ArrayList<>();
+
+        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+            Map<String, String> err = new HashMap<>();
+            err.put("field", error.getField());
+            err.put("message", error.getDefaultMessage());
+            errors.add(err);
+        }
+
+        body.put("status", HttpStatus.BAD_REQUEST.value());
+        body.put("errors", errors);
+        return new ResponseEntity<>(body, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("status", HttpStatus.CONFLICT.value());
+        body.put("error", ex.getMessage());
+        return new ResponseEntity<>(body, HttpStatus.CONFLICT);
+    }
+}

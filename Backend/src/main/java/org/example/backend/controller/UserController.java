@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.UserRequestDto;
 import org.example.backend.dto.UserResponseDto;
+import org.example.backend.exception.ConflictException;
 import org.example.backend.mapper.UserMapper;
 import org.example.backend.model.User;
 import org.example.backend.repository.UserRepository;
@@ -35,8 +36,10 @@ public class UserController {
 
     @PostMapping("/auth/signup")
     public ResponseEntity<UserResponseDto> signup(@Valid @RequestBody UserRequestDto dto) {
-        if (repo.existsByEmail(dto.getEmail()) || repo.existsByUsername(dto.getUsername()))
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        if (repo.existsByEmail(dto.getEmail()))
+            throw new ConflictException("Этот email уже зарегистрирован");
+        if (repo.existsByUsername(dto.getUsername()))
+            throw new ConflictException("Этот username уже занят");
 
         User saved = repo.save(UserMapper.toEntity(dto));
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(saved));
