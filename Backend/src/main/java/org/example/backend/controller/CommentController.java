@@ -15,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -74,9 +76,9 @@ public class CommentController {
 
     // Обновить комментарий (только свой!)
     @PutMapping("/{id}")
-    public ResponseEntity<CommentResponse> updateComment(@PathVariable UUID id,
-                                                         @RequestBody CommentRequest request,
-                                                         @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<?> updateComment(@PathVariable UUID id,
+                                           @RequestBody CommentRequest request,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
         Comment comment = commentRepository.findById(id).orElseThrow();
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
@@ -85,12 +87,26 @@ public class CommentController {
             return ResponseEntity.status(403).build();
         }
 
+        // Если новый текст пустой или состоит только из пробелов — считаем, что пользователь хочет удалить комментарий
+        if (request.getContent() == null || request.getContent().trim().isEmpty()) {
+            comment.setDeletedDate(LocalDateTime.now());
+            commentRepository.save(comment);
+
+            // Возвращаем специальный ответ с сообщением, что комментарий был удалён
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Комментарий был удалён, так как содержимое пустое.");
+            response.put("commentId", comment.getId());
+            return ResponseEntity.ok(response);
+        }
+
+        // Обычное обновление комментария
         comment.setContent(request.getContent());
         comment.setEditedDate(LocalDateTime.now());
         Comment saved = commentRepository.save(comment);
 
         return ResponseEntity.ok(commentMapper.toDto(saved));
     }
+
 
     // Удалить комментарий (только свой!)
     @DeleteMapping("/{id}")
