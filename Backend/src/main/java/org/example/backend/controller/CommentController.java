@@ -1,5 +1,6 @@
 package org.example.backend.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.CommentRequest;
 import org.example.backend.dto.CommentResponse;
@@ -29,7 +30,7 @@ public class CommentController {
 
     // Создать комментарий
     @PostMapping
-    public ResponseEntity<CommentResponse> createComment(@RequestBody CommentRequest request,
+    public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request,
                                                          @AuthenticationPrincipal UserDetails userDetails) {
         // Находим пост по id, если нет — кидаем 404
         Post post = postRepository.findById(request.getPostId())
