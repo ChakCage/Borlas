@@ -22,7 +22,9 @@ public class PostController {
     private final PostRepository postRepo;
     private final UserRepository userRepo;
 
-
+    /**
+     * создание поста
+     * **/
     @PostMapping
     public ResponseEntity<Post> create(@Valid @RequestBody Post post,
                                        @AuthenticationPrincipal UserDetails ud) {
