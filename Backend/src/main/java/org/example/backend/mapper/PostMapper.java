@@ -20,6 +20,7 @@ public class PostMapper {
         dto.setId(post.getId());
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
+
         return dto;
     }
 }
