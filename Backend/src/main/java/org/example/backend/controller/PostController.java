@@ -2,9 +2,7 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.PostRequest;
-import org.example.backend.dto.PostResponse;
-import org.example.backend.mapper.PostMapper;
+import org.example.backend.model.Post;
 import org.example.backend.model.User;
 import org.example.backend.repository.PostRepository;
 import org.example.backend.repository.UserRepository;
@@ -13,8 +11,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -24,44 +22,48 @@ public class PostController {
     private final PostRepository postRepo;
     private final UserRepository userRepo;
 
+    /**
+     * создание поста
+     * **/
     @PostMapping
-    public ResponseEntity<PostResponse> create(@Valid @RequestBody PostRequest dto,
-                                               @AuthenticationPrincipal UserDetails ud) {
-        if (ud == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<Post> create(@Valid @RequestBody Post post,
+                                       @AuthenticationPrincipal UserDetails ud) {
+
         User author = userRepo.findByUsername(ud.getUsername()).orElseThrow();
-        var saved = postRepo.save(PostMapper.toEntity(dto, author));
-        return ResponseEntity.status(HttpStatus.CREATED).body(PostMapper.toDto(saved));
+        post.setAuthor(author);
+        Post saved = postRepo.save(post);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
+
 
     @GetMapping
-    public ResponseEntity<List<PostResponse>> getAll() {
-        var list = postRepo.findAll().stream().map(PostMapper::toDto).collect(Collectors.toList());
-        return ResponseEntity.ok(list);
+    public ResponseEntity<List<Post>> getAll() {
+        return ResponseEntity.ok(postRepo.findAll());
     }
 
+
     @GetMapping("/{id}")
-    public ResponseEntity<PostResponse> getById(@PathVariable UUID id) {
+    public ResponseEntity<Post> getById(@PathVariable UUID id) {
         return postRepo.findById(id)
-                .map(p -> ResponseEntity.ok(PostMapper.toDto(p)))
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+
     @PutMapping("/{id}")
-    public ResponseEntity<PostResponse> update(@PathVariable UUID id,
-                                               @Valid @RequestBody PostRequest dto,
-                                               @AuthenticationPrincipal UserDetails ud) {
-        if (ud == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<Post> update(@PathVariable UUID id,
+                                       @Valid @RequestBody Post body) {
+
         return postRepo.findById(id)
                 .map(p -> {
-                    p.setTitle(dto.getTitle());
-                    p.setContent(dto.getContent());
-                    p.setUpdatedDate(java.time.LocalDateTime.now());
-                    return ResponseEntity.ok(PostMapper.toDto(postRepo.save(p)));
+                    p.setTitle(body.getTitle());
+                    p.setContent(body.getContent());
+                    p.setUpdatedDate(LocalDateTime.now());
+                    return ResponseEntity.ok(postRepo.save(p));
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
