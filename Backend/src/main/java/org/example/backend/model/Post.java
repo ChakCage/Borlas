@@ -12,13 +12,12 @@ import java.util.UUID;
 @Table(name = "posts")
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     private UUID id;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
-
 
     @Column(nullable = false)
     private String title;
