@@ -17,14 +17,14 @@ public class PostMapper {
         return post;
     }
 
-    public PostResponse toDto(Post p) {
-        PostResponse r = new PostResponse();
-        r.setId(p.getId());
-        r.setTitle(p.getTitle());
-        r.setContent(p.getContent());
-        r.setCreatedDate(p.getCreatedDate());
-        r.setUpdatedDate(p.getUpdatedDate());
-        r.setAuthorId(p.getAuthor().getId());
-        return r;
+    public PostResponse toDto(Post post) {
+        PostResponse response = new PostResponse();
+        response.setId(post.getId());
+        response.setTitle(post.getTitle());
+        response.setContent(post.getContent());
+        response.setCreatedDate(post.getCreatedDate());
+        response.setUpdatedDate(post.getUpdatedDate());
+        response.setAuthorId(post.getAuthor().getId());
+        return response;
     }
 }

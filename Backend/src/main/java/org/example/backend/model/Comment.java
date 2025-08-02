@@ -2,6 +2,7 @@ package org.example.backend.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -21,14 +22,14 @@ public class Comment {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    @Column(name= "content", nullable = false, length = 4098)
+    @Column(name = "content", nullable = false, length = 4098)
     private String content;
 
-    @Column(name = "created_date", nullable = false)
+    @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate = LocalDateTime.now();
 
-    @Column(name = "edited_date")
-    private LocalDateTime editedDate;
+    @Column(name = "edited_date",  nullable = false)
+    private LocalDateTime editedDate = LocalDateTime.now();
 
     @Column(name = "deleted_date")
     private LocalDateTime deletedDate;
