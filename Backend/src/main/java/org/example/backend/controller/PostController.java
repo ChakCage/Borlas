@@ -30,7 +30,7 @@ public class PostController {
     private final PostMapper postMapper;
 
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<PostResponse> create(@Valid @RequestBody PostRequest dto,
                                                @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
@@ -58,7 +58,7 @@ public class PostController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("update/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable UUID id,
                                                @Valid @RequestBody PostRequest dto,
                                                @AuthenticationPrincipal UserDetails userDetails) {
@@ -73,7 +73,7 @@ public class PostController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         if (postRepo.existsById(id)) {
             postRepo.deleteById(id);

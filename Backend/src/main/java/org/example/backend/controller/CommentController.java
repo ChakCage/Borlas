@@ -31,7 +31,7 @@ public class CommentController {
     private final CommentMapper commentMapper;
 
     // Создать комментарий
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request,
                                                          @AuthenticationPrincipal UserDetails userDetails) {
         // Находим пост по id, если нет — кидаем 404
@@ -75,10 +75,13 @@ public class CommentController {
     }
 
     // Обновить комментарий (только свой!)
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<?> updateComment(@PathVariable UUID id,
                                            @RequestBody CommentRequest request,
                                            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Comment comment = commentRepository.findById(id).orElseThrow();
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
@@ -109,9 +112,12 @@ public class CommentController {
 
 
     // Удалить комментарий (только свой!)
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable UUID id,
                                            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         Comment comment = commentRepository.findById(id).orElseThrow();
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
@@ -122,6 +128,6 @@ public class CommentController {
 
         comment.setDeletedDate(LocalDateTime.now());
         commentRepository.save(comment);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Post with id: %s | Successfully Deleted");
     }
 }

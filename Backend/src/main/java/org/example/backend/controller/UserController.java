@@ -51,7 +51,7 @@ public class UserController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/update/{id}")
     public ResponseEntity<UserResponseDto> update(@PathVariable UUID id,
                                                   @Valid @RequestBody UserRequestDto userRequestDto) {
         return repo.findById(id)
@@ -63,7 +63,7 @@ public class UserController {
     }
 
 
-    @PatchMapping("/me")
+    @PatchMapping("/me") //??? для чего этот метод ???
     public ResponseEntity<UserResponseDto> patchMe(@AuthenticationPrincipal UserDetails userDetails,
                                                    @RequestBody UserRequestDto userRequestDto) {
         User user = repo.findByUsername(userDetails.getUsername()).orElseThrow();
@@ -72,7 +72,7 @@ public class UserController {
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         if (repo.existsById(id)) {
             repo.deleteById(id);
