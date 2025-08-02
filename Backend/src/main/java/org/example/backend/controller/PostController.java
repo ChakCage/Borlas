@@ -2,6 +2,8 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.backend.dto.PostResponse;
+import org.example.backend.mapper.PostMapper;
 import org.example.backend.dto.PostRequest;
 import org.example.backend.dto.PostResponse;
 import org.example.backend.mapper.PostMapper;
@@ -23,6 +25,8 @@ public class PostController {
 
     private final PostRepository postRepo;
     private final UserRepository userRepo;
+    private final PostMapper postMapper;
+
 
     @PostMapping
     public ResponseEntity<PostResponse> create(@Valid @RequestBody PostRequest dto,
@@ -70,5 +74,36 @@ public class PostController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
+
+    //*
+    // ПРОСМОТР УДАЛЕННЫХ ПОСТОВ*//
+    @GetMapping("/deleted")
+    public ResponseEntity<List<PostResponse>> getDeletedPosts(
+            @RequestParam String login) {
+
+        List<Post> posts = login.equals("admin")
+                ? postRepo.findAllDeleted()
+                : postRepo.findDeletedByUsername(login);
+
+        List<PostResponse> response = posts.stream()
+                .map(postMapper::toDto) // Используем инжектированный маппер
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
+    }
+
+    // Эндпоинт для активных постов
+    @GetMapping("/active")
+    public ResponseEntity<List<PostResponse>> getActivePosts(
+            @RequestParam String login) {
+
+        List<Post> posts = login.equals("admin")
+                ? postRepo.findAllActive()
+                : postRepo.findActiveByUsername(login);
+
+        List<PostResponse> response = posts.stream()
+                .map(postMapper::toDto) // Используем инжектированный маппер
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 }
