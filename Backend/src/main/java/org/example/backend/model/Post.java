@@ -12,7 +12,7 @@ import java.util.UUID;
 @Table(name = "posts")
 public class Post {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @ManyToOne(optional = false)
@@ -31,7 +31,7 @@ public class Post {
 
     @JsonAlias("updatedDate")
     @Column(name = "updated_date")
-    private LocalDateTime updatedDate;
+    private LocalDateTime updatedDate = LocalDateTime.now();
 
     @JsonProperty("deletedDate")
     @Column(name = "deleted_date")
