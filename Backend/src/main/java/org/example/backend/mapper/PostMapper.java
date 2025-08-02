@@ -4,16 +4,20 @@ import org.example.backend.dto.PostRequest;
 import org.example.backend.dto.PostResponse;
 import org.example.backend.model.Post;
 import org.example.backend.model.User;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PostMapper {
-    public static Post toEntity(PostRequest dto, User author) {
-        Post p = new Post();
-        p.setTitle(dto.getTitle());
-        p.setContent(dto.getContent());
-        p.setAuthor(author);
-        return p;
+
+    public Post toEntity(PostRequest dto, User author) {
+        Post post = new Post();
+        post.setTitle(dto.getTitle());
+        post.setContent(dto.getContent());
+        post.setAuthor(author);
+        return post;
     }
-    public static PostResponse toDto(Post p) {
+
+    public PostResponse toDto(Post p) {
         PostResponse r = new PostResponse();
         r.setId(p.getId());
         r.setTitle(p.getTitle());

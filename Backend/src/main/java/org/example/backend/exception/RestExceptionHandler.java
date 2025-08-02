@@ -40,7 +40,6 @@ public class RestExceptionHandler {
     }
 
 
-
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Object> handleResponseStatusException(
             ResponseStatusException ex,

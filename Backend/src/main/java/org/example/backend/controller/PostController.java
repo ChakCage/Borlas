@@ -2,20 +2,22 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.PostResponse;
-import org.example.backend.mapper.PostMapper;
 import org.example.backend.dto.PostRequest;
 import org.example.backend.dto.PostResponse;
+import org.example.backend.exception.ConflictException;
 import org.example.backend.mapper.PostMapper;
+import org.example.backend.model.Post;
 import org.example.backend.model.User;
 import org.example.backend.repository.PostRepository;
 import org.example.backend.repository.UserRepository;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -30,39 +32,43 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<PostResponse> create(@Valid @RequestBody PostRequest dto,
-                                               @AuthenticationPrincipal UserDetails ud) {
-        if (ud == null) {
+                                               @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        User author = userRepo.findByUsername(ud.getUsername()).orElseThrow();
-        var saved = postRepo.save(PostMapper.toEntity(dto, author));
-        return ResponseEntity.status(HttpStatus.CREATED).body(PostMapper.toDto(saved));
+        User author = userRepo.findByUsername(userDetails.getUsername()).orElseThrow();
+        var saved = postRepo.save(postMapper.toEntity(dto, author));
+        return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(saved));
     }
 
     @GetMapping
     public ResponseEntity<List<PostResponse>> getAll() {
-        var list = postRepo.findAll().stream().map(PostMapper::toDto).collect(Collectors.toList());
+        var list = postRepo.findAll().stream().map(postMapper::toDto).collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> getById(@PathVariable UUID id) {
-        return postRepo.findById(id)
-                .map(p -> ResponseEntity.ok(PostMapper.toDto(p)))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        try {
+            return postRepo.findById(id)
+                    .map(post -> ResponseEntity.ok(postMapper.toDto(post)))
+                    .orElseThrow();
+        } catch (Exception ex) {
+            throw new ConflictException(String.format("Post with id %s not found", id));
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable UUID id,
                                                @Valid @RequestBody PostRequest dto,
-                                               @AuthenticationPrincipal UserDetails ud) {
-        if (ud == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                                               @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         return postRepo.findById(id)
-                .map(p -> {
-                    p.setTitle(dto.getTitle());
-                    p.setContent(dto.getContent());
-                    p.setUpdatedDate(java.time.LocalDateTime.now());
-                    return ResponseEntity.ok(PostMapper.toDto(postRepo.save(p)));
+                .map(post -> {
+                    post.setTitle(dto.getTitle());
+                    post.setContent(dto.getContent());
+                    post.setUpdatedDate(java.time.LocalDateTime.now());
+                    return ResponseEntity.ok(postMapper.toDto(postRepo.save(post)));
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }

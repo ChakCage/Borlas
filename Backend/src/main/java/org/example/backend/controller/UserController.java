@@ -24,18 +24,8 @@ public class UserController {
     private final UserRepository repo;
 
 
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserRequestDto dto) {
-        if (repo.existsByEmail(dto.getEmail()))
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
-
-        User saved = repo.save(UserMapper.toEntity(dto));
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(saved));
-    }
-
-
-    @PostMapping("/auth/signup")
-    public ResponseEntity<UserResponseDto> signup(@Valid @RequestBody UserRequestDto dto) {
         if (repo.existsByEmail(dto.getEmail()))
             throw new ConflictException("Этот email уже зарегистрирован");
         if (repo.existsByUsername(dto.getUsername()))
@@ -44,7 +34,6 @@ public class UserController {
         User saved = repo.save(UserMapper.toEntity(dto));
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(saved));
     }
-
 
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAll() {
@@ -55,41 +44,39 @@ public class UserController {
         return ResponseEntity.ok(list);
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getById(@PathVariable UUID id) {
         return repo.findById(id)
-                .map(u -> ResponseEntity.ok(UserMapper.toDto(u)))
+                .map(user -> ResponseEntity.ok(UserMapper.toDto(user)))
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDto> update(@PathVariable UUID id,
-                                                  @Valid @RequestBody UserRequestDto dto) {
+                                                  @Valid @RequestBody UserRequestDto userRequestDto) {
         return repo.findById(id)
-                .map(u -> {
-                    UserMapper.update(u, dto);
-                    return ResponseEntity.ok(UserMapper.toDto(repo.save(u)));
+                .map(user -> {
+                    UserMapper.update(user, userRequestDto);
+                    return ResponseEntity.ok(UserMapper.toDto(repo.save(user)));
                 })
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
 
     @PatchMapping("/me")
-    public ResponseEntity<UserResponseDto> patchMe(@AuthenticationPrincipal UserDetails ud,
-                                                   @RequestBody UserRequestDto dto) {
-        User u = repo.findByUsername(ud.getUsername()).orElseThrow();
-        UserMapper.patch(u, dto);
-        return ResponseEntity.ok(UserMapper.toDto(repo.save(u)));
+    public ResponseEntity<UserResponseDto> patchMe(@AuthenticationPrincipal UserDetails userDetails,
+                                                   @RequestBody UserRequestDto userRequestDto) {
+        User user = repo.findByUsername(userDetails.getUsername()).orElseThrow();
+        UserMapper.patch(user, userRequestDto);
+        return ResponseEntity.ok(UserMapper.toDto(repo.save(user)));
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<String> delete(@PathVariable UUID id) {
         if (repo.existsById(id)) {
             repo.deleteById(id);
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.ok(String.format("User with id: %s | Successfully Deleted", id));
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }

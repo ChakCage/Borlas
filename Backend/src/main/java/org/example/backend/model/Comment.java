@@ -21,7 +21,7 @@ public class Comment {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name= "content", nullable = false, length = 4098)
     private String content;
 
     @Column(name = "created_date", nullable = false)

@@ -14,59 +14,59 @@ public final class UserMapper {
 
 
     public static User toEntity(UserRequestDto dto) {
-        User u = new User();
-        copyIntoEntity(u, dto, true);
-        return u;
+        User user = new User();
+        copyIntoEntity(user, dto, true);
+        return user;
     }
 
 
-    public static void update(User u, UserRequestDto dto) {
-        copyIntoEntity(u, dto, true);
-        u.setUpdatedAt(LocalDateTime.now());
+    public static void update(User user, UserRequestDto dto) {
+        copyIntoEntity(user, dto, true);
+        user.setUpdatedAt(LocalDateTime.now());
     }
 
 
-    public static void patch(User u, UserRequestDto dto) {
-        copyIntoEntity(u, dto, false);
-        u.setUpdatedAt(LocalDateTime.now());
+    public static void patch(User user, UserRequestDto dto) {
+        copyIntoEntity(user, dto, false);
+        user.setUpdatedAt(LocalDateTime.now());
     }
 
 
-    public static UserResponseDto toDto(User u) {
-        UserResponseDto r = new UserResponseDto();
-        r.setId(u.getId());
-        r.setUsername(u.getUsername());
-        r.setEmail(u.getEmail());
-        r.setBio(u.getBio());
-        r.setAvatarUrl(u.getAvatarUrl());
-        r.setBirthDate(u.getBirthDate());
-        if (u.getGender() != null) r.setGender(u.getGender().name());
-        r.setCreatedAt(u.getCreatedAt());
-        r.setUpdatedAt(u.getUpdatedAt());
-        return r;
+    public static UserResponseDto toDto(User user) {
+        UserResponseDto userResponseDto = new UserResponseDto();
+        userResponseDto.setId(user.getId());
+        userResponseDto.setUsername(user.getUsername());
+        userResponseDto.setEmail(user.getEmail());
+        userResponseDto.setBio(user.getBio());
+        userResponseDto.setAvatarUrl(user.getAvatarUrl());
+        userResponseDto.setBirthDate(user.getBirthDate());
+        if (user.getGender() != null) userResponseDto.setGender(user.getGender().name());
+        userResponseDto.setCreatedAt(user.getCreatedAt());
+        userResponseDto.setUpdatedAt(user.getUpdatedAt());
+        return userResponseDto;
     }
 
 
-    private static void copyIntoEntity(User u, UserRequestDto d, boolean overwriteNull) {
+    private static void copyIntoEntity(User user, UserRequestDto dto, boolean overwriteNull) {
 
-        if (overwriteNull || d.getUsername()   != null) u.setUsername(d.getUsername());
-        if (overwriteNull || d.getEmail()      != null) u.setEmail(d.getEmail());
+        if (overwriteNull || dto.getUsername()   != null) user.setUsername(dto.getUsername());
+        if (overwriteNull || dto.getEmail()      != null) user.setEmail(dto.getEmail());
 
-        if (overwriteNull || d.getPassword()   != null) {
-            String raw = d.getPassword();
-            if (raw != null) u.setPasswordHash(ENC.encode(raw));
-            else if (overwriteNull) u.setPasswordHash(null);
+        if (overwriteNull || dto.getPassword()   != null) {
+            String raw = dto.getPassword();
+            if (raw != null) user.setPasswordHash(ENC.encode(raw));
+            else if (overwriteNull) user.setPasswordHash(null);
         }
 
-        if (overwriteNull || d.getBio()        != null) u.setBio(d.getBio());
-        if (overwriteNull || d.getAvatarUrl()  != null) u.setAvatarUrl(d.getAvatarUrl());
-        if (overwriteNull || d.getBirthDate()  != null) u.setBirthDate(d.getBirthDate());
+        if (overwriteNull || dto.getBio()        != null) user.setBio(dto.getBio());
+        if (overwriteNull || dto.getAvatarUrl()  != null) user.setAvatarUrl(dto.getAvatarUrl());
+        if (overwriteNull || dto.getBirthDate()  != null) user.setBirthDate(dto.getBirthDate());
 
-        if (overwriteNull || d.getGender()     != null) {
-            if (d.getGender() != null)
-                u.setGender(Gender.valueOf(d.getGender()));
+        if (overwriteNull || dto.getGender()     != null) {
+            if (dto.getGender() != null)
+                user.setGender(Gender.valueOf(dto.getGender()));
             else if (overwriteNull)
-                u.setGender(null);
+                user.setGender(null);
         }
     }
 }
