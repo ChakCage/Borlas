@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Контроллер для управления постами.
+ */
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
@@ -29,7 +32,13 @@ public class PostController {
     private final UserRepository userRepo;
     private final PostMapper postMapper;
 
-
+    /**
+     * Создать новый пост.
+     *
+     * @param dto данные поста
+     * @param userDetails текущий пользователь (автор поста)
+     * @return созданный пост
+     */
     @PostMapping("/create")
     public ResponseEntity<PostResponse> create(@Valid @RequestBody PostRequest dto,
                                                @AuthenticationPrincipal UserDetails userDetails) {
@@ -41,12 +50,23 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(saved));
     }
 
+    /**
+     * Получить список всех постов.
+     *
+     * @return список постов
+     */
     @GetMapping
     public ResponseEntity<List<PostResponse>> getAll() {
         var list = postRepo.findAll().stream().map(postMapper::toDto).collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
 
+    /**
+     * Получить пост по id.
+     *
+     * @param id идентификатор поста
+     * @return найденный пост или ошибка
+     */
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> getById(@PathVariable UUID id) {
         try {
@@ -58,6 +78,14 @@ public class PostController {
         }
     }
 
+    /**
+     * Обновить пост.
+     *
+     * @param id идентификатор поста
+     * @param dto новые данные поста
+     * @param userDetails текущий пользователь
+     * @return обновлённый пост
+     */
     @PutMapping("update/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable UUID id,
                                                @Valid @RequestBody PostRequest dto,
@@ -73,6 +101,12 @@ public class PostController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    /**
+     * Удалить пост по id.
+     *
+     * @param id идентификатор поста
+     * @return результат удаления
+     */
     @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         if (postRepo.existsById(id)) {
@@ -82,8 +116,12 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
 
-    //*
-    // ПРОСМОТР УДАЛЕННЫХ ПОСТОВ*//
+    /**
+     * Получить список удалённых постов.
+     *
+     * @param login имя пользователя или "admin"
+     * @return список удалённых постов
+     */
     @GetMapping("/deleted")
     public ResponseEntity<List<PostResponse>> getDeletedPosts(
             @RequestParam String login) {
@@ -93,12 +131,17 @@ public class PostController {
                 : postRepo.findDeletedByUsername(login);
 
         List<PostResponse> response = posts.stream()
-                .map(postMapper::toDto) // Используем инжектированный маппер
+                .map(postMapper::toDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }
 
-    // Эндпоинт для активных постов
+    /**
+     * Получить список активных (не удалённых) постов.
+     *
+     * @param login имя пользователя или "admin"
+     * @return список активных постов
+     */
     @GetMapping("/active")
     public ResponseEntity<List<PostResponse>> getActivePosts(
             @RequestParam String login) {
@@ -108,7 +151,7 @@ public class PostController {
                 : postRepo.findActiveByUsername(login);
 
         List<PostResponse> response = posts.stream()
-                .map(postMapper::toDto) // Используем инжектированный маппер
+                .map(postMapper::toDto)
                 .collect(Collectors.toList());
         return ResponseEntity.ok(response);
     }

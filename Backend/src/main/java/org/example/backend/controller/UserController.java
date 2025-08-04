@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Контроллер для управления пользователями.
+ */
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -23,7 +26,12 @@ public class UserController {
 
     private final UserRepository repo;
 
-
+    /**
+     * Создать нового пользователя.
+     *
+     * @param dto данные пользователя
+     * @return созданный пользователь
+     */
     @PostMapping("/create")
     public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserRequestDto dto) {
         if (repo.existsByEmail(dto.getEmail()))
@@ -35,6 +43,11 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(saved));
     }
 
+    /**
+     * Получить список всех пользователей.
+     *
+     * @return список пользователей
+     */
     @GetMapping
     public ResponseEntity<List<UserResponseDto>> getAll() {
         List<UserResponseDto> list = repo.findAll()
@@ -44,6 +57,12 @@ public class UserController {
         return ResponseEntity.ok(list);
     }
 
+    /**
+     * Получить пользователя по id.
+     *
+     * @param id идентификатор пользователя
+     * @return пользователь
+     */
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getById(@PathVariable UUID id) {
         return repo.findById(id)
@@ -51,6 +70,13 @@ public class UserController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
+    /**
+     * Обновить пользователя по id.
+     *
+     * @param id идентификатор пользователя
+     * @param userRequestDto новые данные пользователя
+     * @return обновлённый пользователь
+     */
     @PutMapping("/update/{id}")
     public ResponseEntity<UserResponseDto> update(@PathVariable UUID id,
                                                   @Valid @RequestBody UserRequestDto userRequestDto) {
@@ -62,8 +88,14 @@ public class UserController {
                 .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-
-    @PatchMapping("/me") //??? для чего этот метод ???
+    /**
+     * Частичное обновление текущего пользователя.
+     *
+     * @param userDetails текущий пользователь
+     * @param userRequestDto новые данные
+     * @return обновлённый пользователь
+     */
+    @PatchMapping("/me")
     public ResponseEntity<UserResponseDto> patchMe(@AuthenticationPrincipal UserDetails userDetails,
                                                    @RequestBody UserRequestDto userRequestDto) {
         User user = repo.findByUsername(userDetails.getUsername()).orElseThrow();
@@ -71,7 +103,12 @@ public class UserController {
         return ResponseEntity.ok(UserMapper.toDto(repo.save(user)));
     }
 
-
+    /**
+     * Удалить пользователя по id.
+     *
+     * @param id идентификатор пользователя
+     * @return сообщение об удалении
+     */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {
         if (repo.existsById(id)) {
