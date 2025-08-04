@@ -21,6 +21,9 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+/**
+ * Контроллер для управления комментариями.
+ */
 @RestController
 @RequestMapping("/api/comments")
 @RequiredArgsConstructor
@@ -30,7 +33,13 @@ public class CommentController {
     private final UserRepository userRepository;
     private final CommentMapper commentMapper;
 
-    // Создать комментарий
+    /**
+     * Создать комментарий (или ответ на другой комментарий).
+     *
+     * @param request DTO с данными комментария
+     * @param userDetails текущий пользователь (автор комментария)
+     * @return созданный комментарий
+     */
     @PostMapping("/create")
     public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request,
                                                          @AuthenticationPrincipal UserDetails userDetails) {
@@ -58,7 +67,12 @@ public class CommentController {
         return ResponseEntity.ok(commentMapper.toDto(saved));
     }
 
-    // Получить все комментарии к посту (по id поста)
+    /**
+     * Получить все комментарии к посту.
+     *
+     * @param postId идентификатор поста
+     * @return список комментариев
+     */
     @GetMapping("/post/{postId}")
     public List<CommentResponse> getCommentsByPost(@PathVariable UUID postId) {
         return commentRepository.findByPost_IdOrderByCreatedDateAsc(postId)
@@ -67,14 +81,27 @@ public class CommentController {
                 .collect(Collectors.toList());
     }
 
-    // Получить отдельный комментарий по id
+    /**
+     * Получить отдельный комментарий по id.
+     *
+     * @param id идентификатор комментария
+     * @return комментарий
+     */
     @GetMapping("/{id}")
     public ResponseEntity<CommentResponse> getComment(@PathVariable UUID id) {
         Comment comment = commentRepository.findById(id).orElseThrow();
         return ResponseEntity.ok(commentMapper.toDto(comment));
     }
 
-    // Обновить комментарий (только свой!)
+    /**
+     * Обновить комментарий (может только автор).
+     * Если контент пустой — комментарий помечается удалённым.
+     *
+     * @param id идентификатор комментария
+     * @param request новый текст комментария
+     * @param userDetails текущий пользователь (автор)
+     * @return обновлённый комментарий или сообщение об удалении
+     */
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateComment(@PathVariable UUID id,
                                            @RequestBody CommentRequest request,
@@ -110,8 +137,13 @@ public class CommentController {
         return ResponseEntity.ok(commentMapper.toDto(saved));
     }
 
-
-    // Удалить комментарий (только свой!)
+    /**
+     * Удалить комментарий (может только автор).
+     *
+     * @param id идентификатор комментария
+     * @param userDetails текущий пользователь (автор)
+     * @return результат удаления
+     */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable UUID id,
                                            @AuthenticationPrincipal UserDetails userDetails) {
