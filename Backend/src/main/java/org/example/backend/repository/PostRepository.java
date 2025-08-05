@@ -2,6 +2,7 @@ package org.example.backend.repository;
 
 
 import org.example.backend.model.Post;
+import org.example.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,4 +24,8 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
 
     @Query("SELECT p FROM Post p WHERE p.deletedDate IS NULL")
     List<Post> findAllActive();
+
+    // Черновики (только свои)
+    @Query("SELECT p FROM Post p WHERE p.author = :author AND p.isDraft = true ORDER BY p.createdDate DESC")
+    List<Post> findDraftsByAuthor(@Param("author") User author);
 }

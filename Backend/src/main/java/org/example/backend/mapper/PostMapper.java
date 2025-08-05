@@ -14,6 +14,9 @@ public class PostMapper {
         post.setTitle(dto.getTitle());
         post.setContent(dto.getContent());
         post.setAuthor(author);
+        if (dto.getIsDraft() != null) {
+            post.setDraft(dto.getIsDraft());
+        }
         return post;
     }
 
@@ -25,6 +28,7 @@ public class PostMapper {
         response.setCreatedDate(post.getCreatedDate());
         response.setUpdatedDate(post.getUpdatedDate());
         response.setAuthorId(post.getAuthor().getId());
+        response.setDraft(post.isDraft());
         return response;
     }
 }

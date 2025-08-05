@@ -50,6 +50,24 @@ public class PostController {
         return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(saved));
     }
 
+    /*
+    * получить черновики
+    * isdraft = true
+    * */
+    @GetMapping("/drafts")
+    public ResponseEntity<List<PostResponse>> getUserDrafts(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User currentUser = userRepo.findByUsername(userDetails.getUsername()).orElseThrow();
+        List<Post> drafts = postRepo.findDraftsByAuthor(currentUser);
+
+        return ResponseEntity.ok(drafts.stream().map(postMapper::toDto).toList());
+    }
+
     /**
      * Получить список всех постов.
      *

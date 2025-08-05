@@ -25,6 +25,9 @@ public class Post {
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
+    @Column(name ="is_draft", nullable = false)
+    private boolean isDraft = true;
+
     @JsonAlias("createdDate")
     @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate = LocalDateTime.now();

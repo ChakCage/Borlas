@@ -10,4 +10,6 @@ public class PostRequest {
 
     @NotBlank(message = "content is required")
     private String content;
+
+    private Boolean isDraft;
 }
