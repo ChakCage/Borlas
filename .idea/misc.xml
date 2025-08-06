@@ -5,7 +5,7 @@
     <option name="enableOpenEditorsShowRecentFiles" value="false" />
   </component>
   <component name="FrameworkDetectionExcludesConfiguration">
-    <file type="web" url="file://$PROJECT_DIR$/Backend" />
+    <file type="web" url="file://$PROJECT_DIR$/backend" />
     <file type="web" url="file://$PROJECT_DIR$/demo" />
   </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_24" default="true" project-jdk-name="openjdk-24" project-jdk-type="JavaSDK">
