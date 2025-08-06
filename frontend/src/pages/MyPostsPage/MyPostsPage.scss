@@ -1,10 +1,7 @@
 .my-posts-page {
-  padding-left: 250px;
   max-width: 1200px;
   margin: 0 auto;
-  padding-right: 20px;
-  padding-top: 20px;
-  padding-bottom: 20px;
+  padding: 20px 20px 20px 250px;
 
   &__header {
     display: flex;
@@ -171,4 +168,4 @@
       width: 100%;
     }
   }
-} 
+}
