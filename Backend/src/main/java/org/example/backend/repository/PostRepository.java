@@ -27,7 +27,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     List<Post> findAllActive();
 
     @Override
-    public default void deleteById(@NonNull UUID id) {
+    default void deleteById(@NonNull UUID id) {
         findById(id).ifPresent(post -> {
             post.setDeletedDate(LocalDateTime.now());
             save(post);

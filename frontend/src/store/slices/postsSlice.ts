@@ -3,13 +3,13 @@ import { postsApi, Post, CreatePostRequest } from '../../api/postsApi';
 
 interface PostsState {
   posts: Post[];
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
 }
 
 const initialState: PostsState = {
   posts: [],
-  loading: false,
+  isLoading: false,
   error: null,
 };
 
@@ -77,87 +77,87 @@ const postsSlice = createSlice({
     builder
       // fetchPosts
       .addCase(fetchPosts.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
       })
       .addCase(fetchPosts.fulfilled, (state, action: PayloadAction<Post[]>) => {
-        state.loading = false;
+        state.isLoading = false;
         state.posts = action.payload;
       })
       .addCase(fetchPosts.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.error.message || 'Ошибка загрузки постов';
       })
       // fetchUserActivePosts
       .addCase(fetchUserActivePosts.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
       })
       .addCase(fetchUserActivePosts.fulfilled, (state, action: PayloadAction<Post[]>) => {
-        state.loading = false;
+        state.isLoading = false;
         state.posts = action.payload;
       })
       .addCase(fetchUserActivePosts.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.error.message || 'Ошибка загрузки активных постов';
       })
       // fetchUserDeletedPosts
       .addCase(fetchUserDeletedPosts.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
       })
       .addCase(fetchUserDeletedPosts.fulfilled, (state, action: PayloadAction<Post[]>) => {
-        state.loading = false;
+        state.isLoading = false;
         state.posts = action.payload;
       })
       .addCase(fetchUserDeletedPosts.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.error.message || 'Ошибка загрузки удаленных постов';
       })
       // createPost
       .addCase(createPost.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
       })
       .addCase(createPost.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.loading = false;
+        state.isLoading = false;
         state.posts.unshift(action.payload);
       })
       .addCase(createPost.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.error.message || 'Ошибка создания поста';
       })
       // updatePost
       .addCase(updatePost.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
       })
       .addCase(updatePost.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.loading = false;
+        state.isLoading = false;
         const index = state.posts.findIndex(post => post.id === action.payload.id);
         if (index !== -1) {
           state.posts[index] = action.payload;
         }
       })
       .addCase(updatePost.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.error.message || 'Ошибка обновления поста';
       })
       // deletePost
       .addCase(deletePost.pending, (state) => {
-        state.loading = true;
+        state.isLoading = true;
         state.error = null;
       })
       .addCase(deletePost.fulfilled, (state, action: PayloadAction<string>) => {
-        state.loading = false;
+        state.isLoading = false;
         state.posts = state.posts.filter(post => post.id !== action.payload);
       })
       .addCase(deletePost.rejected, (state, action) => {
-        state.loading = false;
+        state.isLoading = false;
         state.error = action.error.message || 'Ошибка удаления поста';
       });
   },
 });
 
 export const { clearError, clearPosts } = postsSlice.actions;
-export default postsSlice.reducer; 
+export default postsSlice.reducer;
