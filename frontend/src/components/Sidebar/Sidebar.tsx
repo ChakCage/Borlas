@@ -53,6 +53,14 @@ export const Sidebar: React.FC = () => {
                             Удаленные посты
                         </Link>
                     </li>
+                    <li className="sidebar__item">
+                        <Link
+                            to="/testView"
+                            className={`sidebar__link ${isActive('/testView') ? 'sidebar__link--active' : ''}`}
+                        >
+                            {"Тестовый экран"}
+                        </Link>
+                    </li>
                 </ul>
             </nav>
         </aside>
