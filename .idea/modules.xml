@@ -4,7 +4,6 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/BLogApp.iml" filepath="$PROJECT_DIR$/.idea/BLogApp.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/Backend.main.iml" filepath="$PROJECT_DIR$/.idea/modules/Backend.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/demo.main.iml" filepath="$PROJECT_DIR$/.idea/modules/demo.main.iml" />
       <module fileurl="file://$PROJECT_DIR$/frontend/frontend.iml" filepath="$PROJECT_DIR$/frontend/frontend.iml" />
     </modules>
   </component>
