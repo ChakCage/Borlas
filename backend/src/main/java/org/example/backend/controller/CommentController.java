@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.CommentRequest;
 import org.example.backend.dto.CommentResponse;
+import org.example.backend.dto.UnuversalOkResponce;
 import org.example.backend.mapper.CommentMapper;
 import org.example.backend.model.*;
 import org.example.backend.repository.*;
@@ -106,9 +107,6 @@ public class CommentController {
     public ResponseEntity<?> updateComment(@PathVariable UUID id,
                                            @RequestBody CommentRequest request,
                                            @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
         Comment comment = commentRepository.findById(id).orElseThrow();
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
@@ -123,10 +121,9 @@ public class CommentController {
             commentRepository.save(comment);
 
             // Возвращаем специальный ответ с сообщением, что комментарий был удалён
-            Map<String, Object> response = new HashMap<>();
-            response.put("message", "Комментарий был удалён, так как содержимое пустое.");
-            response.put("commentId", comment.getId());
-            return ResponseEntity.ok(response);
+            var response = new UnuversalOkResponce(comment, "Комментарий был удалён, так как содержимое пустое.");
+
+            return ResponseEntity.ok(response.getResponse());
         }
 
         // Обычное обновление комментария

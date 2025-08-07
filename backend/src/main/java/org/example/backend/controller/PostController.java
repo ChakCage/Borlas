@@ -35,16 +35,13 @@ public class PostController {
     /**
      * Создать новый пост.
      *
-     * @param dto данные поста
+     * @param dto         данные поста
      * @param userDetails текущий пользователь (автор поста)
      * @return созданный пост
      */
     @PostMapping("/create")
     public ResponseEntity<PostResponse> create(@Valid @RequestBody PostRequest dto,
                                                @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
         User author = userRepo.findByUsername(userDetails.getUsername()).orElseThrow();
         var saved = postRepo.save(postMapper.toEntity(dto, author));
         return ResponseEntity.status(HttpStatus.CREATED).body(postMapper.toDto(saved));
@@ -81,16 +78,15 @@ public class PostController {
     /**
      * Обновить пост.
      *
-     * @param id идентификатор поста
-     * @param dto новые данные поста
-     * @param userDetails текущий пользователь
+     * @param id     идентификатор поста
+     * @param dto    новые данные поста
+     * @param ignore текущий пользователь (нужен для срабатывания авторизации)
      * @return обновлённый пост
      */
     @PutMapping("update/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable UUID id,
                                                @Valid @RequestBody PostRequest dto,
-                                               @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                                               @AuthenticationPrincipal UserDetails ignore) {
         return postRepo.findById(id)
                 .map(post -> {
                     post.setTitle(dto.getTitle());
