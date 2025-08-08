@@ -10,6 +10,7 @@ import {DeletedPostsPage} from './pages/DeletedPostsPage/DeletedPostsPage'
 import {setAuthToken} from "./api/axios"
 import './App.scss'
 import {Button} from "./components/button/Button"
+import {TextButton} from "./components/TextButton/TextButton"
 
 function App() {
     setAuthToken("testuser", "yourpassword")
@@ -17,6 +18,11 @@ function App() {
     const onClickBtn = () => {
         // alert("Кнопка нажата")
         console.log("Кнопка нажата")
+    }
+
+    const onClickTxtBtn = () => {
+        // alert("Кнопка коммента нажата")
+        console.log("Кнопка коммента нажата")
     }
 
     return (
@@ -36,6 +42,10 @@ function App() {
                                     <Button text={"Button"} onClick={onClickBtn}/>
                                     <span>-----------</span>
                                     <Button text={"Button2"} onClick={onClickBtn} isDisabled={true}/>
+                                    <span>-----------</span>
+                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn}/>
+                                    <span>-----------</span>
+                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} isDisabled={true}/>
                                 </div>
                             }/>
                         </Routes>

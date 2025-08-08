@@ -1,0 +1,28 @@
+.text-button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: Roboto, Arial, serif;
+  color: black;
+  cursor: pointer;
+  text-decoration: none;
+
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  &:active {
+    text-decoration: underline;
+  }
+
+  &:disabled {
+    opacity: 50%;
+    cursor: not-allowed;
+  }
+
+  &:focus {
+    box-shadow: 0 0 0 1px #000DFF;
+  }
+}
