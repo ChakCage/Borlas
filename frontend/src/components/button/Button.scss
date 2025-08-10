@@ -1,6 +1,6 @@
 .button-posts {
   outline: none;
-  background-color: #E9EEF9;
+  width: fit-content;
   font-family: Roboto, Arial, serif;
   font-weight: 400;
   font-size: 16px;
@@ -11,25 +11,56 @@
   transition: background-color ease .5s;
   cursor: pointer;
 
-  &:hover {
-    background-color: #D3DCF3;
-  }
+  //position: relative;
+  //&:before {
+  //  position: absolute;
+  //  content: "";
+  //  width: 0;
+  //  bottom: 0;
+  //  left: 0;
+  //  border-top: 1.5px solid black;
+  //  transition: width ease .5s;
+  //}
+  //&:hover:before {
+  //  width: 100%;
+  //}
 
-  &:active {
+  &:focus:active {
     background-color: #ffffff;
   }
 
   &:disabled {
     opacity: 50%;
-
-    &:hover {
-      background-color: #E9EEF9;
-    }
   }
 
   &:focus {
     box-shadow: 0 0 0 1px #000DFF;
   }
+
+  &_primary {
+    background-color: #E9EEF9;
+
+    &:hover {
+      background-color: #D3DCF3;
+    }
+
+    &disabled:hover {
+      background-color: #E9EEF9;
+    }
+  }
+
+  &_soft {
+    background-color: #F9E9E9;
+
+    &:hover {
+      background-color: #F3D3D4;
+    }
+
+    &disabled:hover {
+      background-color: #F9E9E9;
+    }
+  }
+
 }
 
 

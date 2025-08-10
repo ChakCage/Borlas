@@ -11,6 +11,7 @@ import {setAuthToken} from "./api/axios"
 import './App.scss'
 import {Button} from "./components/button/Button"
 import {TextButton} from "./components/TextButton/TextButton"
+import {ButtonTheme} from "./types/BtnThemeEnum"
 
 function App() {
     setAuthToken("testuser", "yourpassword")
@@ -38,16 +39,15 @@ function App() {
                             <Route path="/my-posts" element={<MyPostsPage/>}/>
                             <Route path="/deleted" element={<DeletedPostsPage/>}/>
                             <Route path="/testView" element={
-                                <div style={{padding: "100px"}}>
-                                    <Button text={"Button"} onClick={onClickBtn}/>
-                                    <span>-----------</span>
-                                    <Button text={"Button2"} onClick={onClickBtn} isDisabled={true}/>
-                                    <span>-----------</span>
+                                <div style={{padding: "100px", display: "flex", flexDirection: "column", gap: "15px"}}>
+                                    <Button text={"Button Primary"} onClick={onClickBtn}/>
+                                    <Button text={"Button Primary disabled"} onClick={onClickBtn} isDisabled={true}/>
+                                    <Button text={"Button Soft"} onClick={onClickBtn} theme={ButtonTheme.Soft}/>
+                                    <Button text={"Button Soft disabled"} onClick={onClickBtn} theme={ButtonTheme.Soft}
+                                            isDisabled={true}/>
                                     <TextButton text={"Комментировать"} onClick={onClickTxtBtn}/>
-                                    <span>-----------</span>
                                     <TextButton text={"Комментировать"} onClick={onClickTxtBtn} isDisabled={true}/>
-                                </div>
-                            }/>
+                                </div>}/>
                         </Routes>
                     </main>
                 </div>
