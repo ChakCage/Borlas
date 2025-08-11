@@ -11,7 +11,7 @@ import {setAuthToken} from "./api/axios"
 import './App.scss'
 import {Button} from "./components/button/Button"
 import {TextButton} from "./components/TextButton/TextButton"
-import {ButtonTheme} from "./types/BtnThemeEnum"
+import {ButtonTheme, TextButtonTheme} from "./types/BtnThemeEnum"
 
 function App() {
     setAuthToken("testuser", "yourpassword")
