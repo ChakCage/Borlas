@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import {Link, useLocation} from 'react-router-dom'
 import './Sidebar.scss'
 import { items } from './SideItems' // импортируем список
 
@@ -30,6 +30,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, children, isActive 
 
 export const Sidebar: React.FC = () => {
     const location = useLocation()
+
+    const isActive = (path: string) => {
+        return location.pathname === path
+    }
+
     return (
         <aside className="sidebar">
             <div className="sidebar__header">
