@@ -1,47 +1,61 @@
 .text-button {
+  // ширина
+  width: fit-content;
+  // текст
+  font-family: Roboto, Arial, serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.1;
+  color: black;
+  text-decoration: none;
+  transition: color ease .2s;
+  // фон и границы
   background: none;
   border: none;
-  padding: 0;
-  margin: 0;
-  font-family: Roboto, Arial, serif;
-  color: black;
+  padding: 1px 0;
+  //курсор
   cursor: pointer;
-  text-decoration: none;
-  width: fit-content;
 
-  &:hover {
-    text-decoration: underline;
+  &:active:not(:disabled) {
+    color: #bbbbbb;
   }
 
-  &:active {
-    text-decoration: underline;
+  &:focus {
+    border-radius: 2px;
+    cursor: default;
+    text-decoration: none;
+    // фиксируем bottom, когда кнопка выбрана
+    &:before{
+      width: 100%;
+      border-top: 1.5px solid #000DFF;
+    }
+  }
+
+  position: relative;
+  &:before {
+    position: absolute;
+    content: "";
+    width: 0;
+    bottom: 0;
+    left: 0;
+    border-top: 1.5px solid black;
+    transition: width ease .5s;
+  }
+  &:hover {
+    text-decoration: none;
+  }
+  &:hover:before {
+    width: 100%;
   }
 
   &:disabled {
     opacity: 50%;
     cursor: not-allowed;
+    text-decoration: none;
+    // отключаем bottom в состоянии disabled
+    &:before{
+      display: none;
+    }
   }
 
-  &:focus {
-    box-shadow: 0 0 0 1px #000DFF;
-  }
-
-  // раскоментируй для того чтобы нижняя линия выезжала
-
-  //position: relative;
-  //&:before {
-  //  position: absolute;
-  //  content: "";
-  //  width: 0;
-  //  bottom: 0;
-  //  left: 0;
-  //  border-top: 1.5px solid black;
-  //  transition: width ease .5s;
-  //}
-  //&:hover {
-  //  text-decoration: none;
-  //}
-  //&:hover:before {
-  //  width: 100%;
-  //}
 }

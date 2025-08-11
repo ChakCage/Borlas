@@ -1,13 +1,36 @@
 import React from 'react'
-import {Link, useLocation} from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import './Sidebar.scss'
+
+interface SidebarItemProps {
+    to: string
+    icon?: React.ReactNode // эмодзи :)
+    children: string
+    isActive: boolean
+}
+
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, children, isActive }) => {
+    return (
+        // li дает возможность не рендерить страницу при переходе, взяли из 'react-router-dom'
+        <li className="sidebar__item">
+            <Link to={to} className={`sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}> {/*В линке лежит to = раздел, класснейм линк, если нет линка - вернет на главную*/}
+                {icon && <span className="sidebar__icon">{icon}</span>} {/*далее показывает иконку, если нет иконки - не рендерит span (0x0)*/}
+                {children} {/*children - string*/}
+            </Link>
+        </li>
+    )
+}
 
 export const Sidebar: React.FC = () => {
     const location = useLocation()
 
-    const isActive = (path: string) => {
-        return location.pathname === path
-    }
+    const items = [
+        { to: '/', icon: '📝', label: 'Все посты' },
+        { to: '/create', icon: '➕', label: 'Создать пост' },
+        { to: '/my-posts', icon: '👤', label: 'Мои посты' },
+        { to: '/deleted', icon: '🗑️', label: 'Удаленные посты' },
+        { to: '/testView', icon: null, label: 'Тестовый экран' },
+    ]
 
     return (
         <aside className="sidebar">
@@ -17,50 +40,12 @@ export const Sidebar: React.FC = () => {
 
             <nav className="sidebar__nav">
                 <ul className="sidebar__list">
-                    <li className="sidebar__item">
-                        <Link
-                            to="/"
-                            className={`sidebar__link ${isActive('/') ? 'sidebar__link--active' : ''}`}
-                        >
-                            <span className="sidebar__icon">📝</span>
-                            Все посты
-                        </Link>
-                    </li>
-                    <li className="sidebar__item">
-                        <Link
-                            to="/create"
-                            className={`sidebar__link ${isActive('/create') ? 'sidebar__link--active' : ''}`}
-                        >
-                            <span className="sidebar__icon">➕</span>
-                            Создать пост
-                        </Link>
-                    </li>
-                    <li className="sidebar__item">
-                        <Link
-                            to="/my-posts"
-                            className={`sidebar__link ${isActive('/my-posts') ? 'sidebar__link--active' : ''}`}
-                        >
-                            <span className="sidebar__icon">👤</span>
-                            Мои посты
-                        </Link>
-                    </li>
-                    <li className="sidebar__item">
-                        <Link
-                            to="/deleted"
-                            className={`sidebar__link ${isActive('/deleted') ? 'sidebar__link--active' : ''}`}
-                        >
-                            <span className="sidebar__icon">🗑️</span>
-                            Удаленные посты
-                        </Link>
-                    </li>
-                    <li className="sidebar__item">
-                        <Link
-                            to="/testView"
-                            className={`sidebar__link ${isActive('/testView') ? 'sidebar__link--active' : ''}`}
-                        >
-                            {"Тестовый экран"}
-                        </Link>
-                    </li>
+                    {/* мапом берем масив пунктов, ul - список */}
+                    {items.map(({ to, icon, label }) => (
+                        <SidebarItem key={to} to={to} icon={icon} isActive={location.pathname === to}>
+                            {label}
+                        </SidebarItem>
+                    ))}
                 </ul>
             </nav>
         </aside>
