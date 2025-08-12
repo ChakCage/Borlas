@@ -35,8 +35,8 @@ public class PostController {
     /**
      * Создать новый пост.
      *
-     * @param dto         данные поста
-     * @param userDetails текущий пользователь (автор поста)
+     * @param dto         данные для создании поста (title, content)
+     * @param userDetails текущий аутентифицированный пользователь — автор поста
      * @return созданный пост
      */
     @PostMapping("/create")
@@ -59,10 +59,11 @@ public class PostController {
     }
 
     /**
-     * Получить пост по id.
+     * Получить пост по идентификатору.
      *
      * @param id идентификатор поста
-     * @return найденный пост или ошибка
+     * @return найденный пост
+     * @throws ConflictException если пост с таким id не найден
      */
     @GetMapping("/{id}")
     public ResponseEntity<PostResponse> getById(@PathVariable UUID id) {
@@ -79,9 +80,9 @@ public class PostController {
      * Обновить пост.
      *
      * @param id     идентификатор поста
-     * @param dto    новые данные поста
-     * @param ignore текущий пользователь (нужен для срабатывания авторизации)
-     * @return обновлённый пост
+     * @param dto    новые данные поста (title, content)
+     * @param ignore текущий пользователь (не используется напрямую, нужен для авторизации)
+     * @return обновлённый пост; 404 если пост не найден
      */
     @PutMapping("update/{id}")
     public ResponseEntity<PostResponse> update(@PathVariable UUID id,
@@ -98,10 +99,10 @@ public class PostController {
     }
 
     /**
-     * Удалить пост по id.
+     * Удалить пост.
      *
      * @param id идентификатор поста
-     * @return результат удаления
+     * @return 204 No Content при успехе или 404, если пост не найден
      */
     @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
@@ -114,13 +115,14 @@ public class PostController {
 
     /**
      * Получить список удалённых постов.
+     * Если {@code login} = {@code "admin"}, возвращаются все удалённые посты.
+     * Иначе — только удалённые посты указанного пользователя.
      *
-     * @param login имя пользователя или "admin"
+     * @param login логин пользователя либо строка {@code "admin"}
      * @return список удалённых постов
      */
     @GetMapping("/deleted")
-    public ResponseEntity<List<PostResponse>> getDeletedPosts(
-            @RequestParam String login) {
+    public ResponseEntity<List<PostResponse>> getDeletedPosts(@RequestParam String login) {
 
         List<Post> posts = login.equals("admin")
                 ? postRepo.findAllDeleted()
@@ -134,13 +136,14 @@ public class PostController {
 
     /**
      * Получить список активных (не удалённых) постов.
+     * Если {@code login} = {@code "admin"}, возвращаются все активные посты.
+     * Иначе — только активные посты указанного пользователя.
      *
-     * @param login имя пользователя или "admin"
+     * @param login логин пользователя либо строка {@code "admin"}
      * @return список активных постов
      */
     @GetMapping("/active")
-    public ResponseEntity<List<PostResponse>> getActivePosts(
-            @RequestParam String login) {
+    public ResponseEntity<List<PostResponse>> getActivePosts(@RequestParam String login) {
 
         List<Post> posts = login.equals("admin")
                 ? postRepo.findAllActive()

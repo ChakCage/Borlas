@@ -29,8 +29,9 @@ public class UserController {
     /**
      * Создать нового пользователя.
      *
-     * @param dto данные пользователя
+     * @param dto данные пользователя (username, email, password, и т.д.)
      * @return созданный пользователь
+     * @throws ConflictException если email или username уже заняты
      */
     @PostMapping("/create")
     public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserRequestDto dto) {
@@ -58,10 +59,10 @@ public class UserController {
     }
 
     /**
-     * Получить пользователя по id.
+     * Получить пользователя по идентификатору.
      *
      * @param id идентификатор пользователя
-     * @return пользователь
+     * @return пользователь при наличии или 404, если не найден
      */
     @GetMapping("/{id}")
     public ResponseEntity<UserResponseDto> getById(@PathVariable UUID id) {
@@ -71,11 +72,11 @@ public class UserController {
     }
 
     /**
-     * Обновить пользователя по id.
+     * Полностью обновить данные пользователя.
      *
-     * @param id идентификатор пользователя
-     * @param userRequestDto новые данные пользователя
-     * @return обновлённый пользователь
+     * @param id              идентификатор пользователя
+     * @param userRequestDto  новые данные пользователя
+     * @return обновлённый пользователь или 404, если пользователь не найден
      */
     @PutMapping("/update/{id}")
     public ResponseEntity<UserResponseDto> update(@PathVariable UUID id,
@@ -89,10 +90,10 @@ public class UserController {
     }
 
     /**
-     * Частичное обновление текущего пользователя.
+     * Частично обновить текущего пользователя.
      *
-     * @param userDetails текущий пользователь
-     * @param userRequestDto новые данные
+     * @param userDetails     текущий аутентифицированный пользователь
+     * @param userRequestDto  частичные изменения (любые поля могут быть null)
      * @return обновлённый пользователь
      */
     @PatchMapping("/me")
@@ -104,10 +105,10 @@ public class UserController {
     }
 
     /**
-     * Удалить пользователя по id.
+     * Удалить пользователя.
      *
      * @param id идентификатор пользователя
-     * @return сообщение об удалении
+     * @return 200 OK с сообщением об удалении или 404, если пользователь не найден
      */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> delete(@PathVariable UUID id) {

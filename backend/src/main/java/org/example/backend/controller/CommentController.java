@@ -5,9 +5,14 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.CommentRequest;
 import org.example.backend.dto.CommentResponse;
 import org.example.backend.dto.UnuversalOkResponce;
+import org.example.backend.exception.ConflictException;
 import org.example.backend.mapper.CommentMapper;
-import org.example.backend.model.*;
-import org.example.backend.repository.*;
+import org.example.backend.model.Comment;
+import org.example.backend.model.Post;
+import org.example.backend.model.User;
+import org.example.backend.repository.CommentRepository;
+import org.example.backend.repository.PostRepository;
+import org.example.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,9 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -34,17 +37,17 @@ public class CommentController {
     private final UserRepository userRepository;
     private final CommentMapper commentMapper;
 
+    private static String s(HttpStatus st){ return st.value()+" "+st.getReasonPhrase(); }
+
     /**
      * Создать комментарий (или ответ на другой комментарий).
-     *
-     * @param request DTO с данными комментария
-     * @param userDetails текущий пользователь (автор комментария)
-     * @return созданный комментарий
      */
     @PostMapping("/create")
-    public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request,
-                                                         @AuthenticationPrincipal UserDetails userDetails) {
-        // Находим пост по id, если нет — кидаем 404
+    public ResponseEntity<?> createComment(@Valid @RequestBody CommentRequest request,
+                                           @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null)
+            throw new ConflictException(HttpStatus.UNAUTHORIZED, "Пользователь не авторизован");
+
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
@@ -65,98 +68,85 @@ public class CommentController {
         comment.setParentComment(parent);
 
         Comment saved = commentRepository.save(comment);
-        return ResponseEntity.ok(commentMapper.toDto(saved));
+        var body = new UnuversalOkResponce(commentMapper.toDto(saved), "Комментарий создан", s(HttpStatus.CREATED)).getResponse();
+        return ResponseEntity.status(HttpStatus.CREATED).body(body);
     }
 
     /**
      * Получить все комментарии к посту.
-     *
-     * @param postId идентификатор поста
-     * @return список комментариев
      */
     @GetMapping("/post/{postId}")
-    public List<CommentResponse> getCommentsByPost(@PathVariable UUID postId) {
-        return commentRepository.findByPost_IdOrderByCreatedDateAsc(postId)
+    public ResponseEntity<?> getCommentsByPost(@PathVariable UUID postId) {
+        List<CommentResponse> list = commentRepository.findByPost_IdOrderByCreatedDateAsc(postId)
                 .stream()
                 .map(commentMapper::toDto)
                 .collect(Collectors.toList());
+        var body = new UnuversalOkResponce(list, "Комментарии к посту", s(HttpStatus.OK)).getResponse();
+        return ResponseEntity.ok(body);
     }
 
     /**
      * Получить отдельный комментарий по id.
-     *
-     * @param id идентификатор комментария
-     * @return комментарий
      */
     @GetMapping("/{id}")
-    public ResponseEntity<CommentResponse> getComment(@PathVariable UUID id) {
+    public ResponseEntity<?> getComment(@PathVariable UUID id) {
         Comment comment = commentRepository.findById(id).orElseThrow();
-        return ResponseEntity.ok(commentMapper.toDto(comment));
+        var body = new UnuversalOkResponce(commentMapper.toDto(comment), "Комментарий найден", s(HttpStatus.OK)).getResponse();
+        return ResponseEntity.ok(body);
     }
 
     /**
-     * Обновить комментарий (может только автор).
-     * Если контент пустой — комментарий помечается удалённым.
-     *
-     * @param id идентификатор комментария
-     * @param request новый текст комментария
-     * @param userDetails текущий пользователь (автор)
-     * @return обновлённый комментарий или сообщение об удалении
+     * Обновить комментарий (только автор).
+     * Пустой текст = «мягкое удаление» (deletedDate).
      */
     @PutMapping("/update/{id}")
     public ResponseEntity<?> updateComment(@PathVariable UUID id,
                                            @RequestBody CommentRequest request,
                                            @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null)
+            throw new ConflictException(HttpStatus.UNAUTHORIZED, "Пользователь не авторизован");
+
         Comment comment = commentRepository.findById(id).orElseThrow();
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
-        // Только автор может обновить свой комментарий!
-        if (!comment.getCreatedBy().getId().equals(user.getId())) {
-            return ResponseEntity.status(403).build();
-        }
+        if (!comment.getCreatedBy().getId().equals(user.getId()))
+            throw new ConflictException(HttpStatus.FORBIDDEN, "Нельзя редактировать чужой комментарий");
 
-        // Если новый текст пустой или состоит только из пробелов — считаем, что пользователь хочет удалить комментарий
+        // пусто -> мягкое удаление
         if (request.getContent() == null || request.getContent().trim().isEmpty()) {
             comment.setDeletedDate(LocalDateTime.now());
             commentRepository.save(comment);
-
-            // Возвращаем специальный ответ с сообщением, что комментарий был удалён
-            var response = new UnuversalOkResponce(comment, "Комментарий был удалён, так как содержимое пустое.");
-
-            return ResponseEntity.ok(response.getResponse());
+            var body = new UnuversalOkResponce(null, "Комментарий удалён (пустой текст)", s(HttpStatus.OK)).getResponse();
+            return ResponseEntity.ok(body);
         }
 
-        // Обычное обновление комментария
         comment.setContent(request.getContent());
         comment.setEditedDate(LocalDateTime.now());
         Comment saved = commentRepository.save(comment);
 
-        return ResponseEntity.ok(commentMapper.toDto(saved));
+        var body = new UnuversalOkResponce(commentMapper.toDto(saved), "Комментарий обновлён", s(HttpStatus.OK)).getResponse();
+        return ResponseEntity.ok(body);
     }
 
     /**
-     * Удалить комментарий (может только автор).
-     *
-     * @param id идентификатор комментария
-     * @param userDetails текущий пользователь (автор)
-     * @return результат удаления
+     * Удалить комментарий (только автор, мягкое удаление).
      */
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<?> deleteComment(@PathVariable UUID id,
                                            @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        if (userDetails == null)
+            throw new ConflictException(HttpStatus.UNAUTHORIZED, "Пользователь не авторизован");
+
         Comment comment = commentRepository.findById(id).orElseThrow();
         User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
-        // Только автор может удалить свой комментарий!
-        if (!comment.getCreatedBy().getId().equals(user.getId())) {
-            return ResponseEntity.status(403).build();
-        }
+        if (!comment.getCreatedBy().getId().equals(user.getId()))
+            throw new ConflictException(HttpStatus.FORBIDDEN, "Нельзя удалять чужой комментарий");
 
         comment.setDeletedDate(LocalDateTime.now());
         commentRepository.save(comment);
-        return ResponseEntity.ok("Post with id: %s | Successfully Deleted");
+
+        var body = new UnuversalOkResponce(null, "Комментарий удалён", s(HttpStatus.OK)).getResponse();
+        return ResponseEntity.ok(body);
     }
 }
