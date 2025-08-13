@@ -1,5 +1,5 @@
 import React from 'react'
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom'
+import {BrowserRouter as Router, Route, Routes} from 'react-router-dom'
 import {Provider} from 'react-redux'
 import {store} from './store'
 import {Sidebar} from './components/Sidebar/Sidebar'
@@ -45,8 +45,10 @@ function App() {
                                     <Button text={"Button Soft"} onClick={onClickBtn} theme={ButtonTheme.Soft}/>
                                     <Button text={"Button Soft disabled"} onClick={onClickBtn} theme={ButtonTheme.Soft}
                                             isDisabled={true}/>
-                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn}/>
-                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} isDisabled={true}/>
+                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Primary}/>
+                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Primary} isDisabled={true}/>
+                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Soft}/>
+                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Soft} isDisabled={true}/>
                                 </div>}/>
                         </Routes>
                     </main>

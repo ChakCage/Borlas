@@ -1,12 +1,19 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import './Sidebar.scss'
+import { items } from './SideItems' // импортируем список
 
 interface SidebarItemProps {
     to: string
     icon?: React.ReactNode // эмодзи :)
     children: string
     isActive: boolean
+}
+
+interface item{
+    to: string;
+    icon: React.ReactNode | null;
+    label:string;
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, children, isActive }) => {
@@ -23,15 +30,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, children, isActive 
 
 export const Sidebar: React.FC = () => {
     const location = useLocation()
-
-    const items = [
-        { to: '/', icon: '📝', label: 'Все посты' },
-        { to: '/create', icon: '➕', label: 'Создать пост' },
-        { to: '/my-posts', icon: '👤', label: 'Мои посты' },
-        { to: '/deleted', icon: '🗑️', label: 'Удаленные посты' },
-        { to: '/testView', icon: null, label: 'Тестовый экран' },
-    ]
-
     return (
         <aside className="sidebar">
             <div className="sidebar__header">
@@ -41,7 +39,7 @@ export const Sidebar: React.FC = () => {
             <nav className="sidebar__nav">
                 <ul className="sidebar__list">
                     {/* мапом берем масив пунктов, ul - список */}
-                    {items.map(({ to, icon, label }) => (
+                    {items.map(({ to, icon, label }: item) => (
                         <SidebarItem key={to} to={to} icon={icon} isActive={location.pathname === to}>
                             {label}
                         </SidebarItem>

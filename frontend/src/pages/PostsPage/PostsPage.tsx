@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {useAppDispatch, useAppSelector} from '../../store/hooks'
 import {fetchPosts, updatePost, deletePost} from '../../store/slices/postsSlice'
-import {PostCard} from '../../components/PostCard/PostCard'
+import {PostCard} from '../../components/PostCard2/PostCard2' //временно поменял на 2
 import {PostForm} from '../../components/PostForm/PostForm'
 import {Post, CreatePostRequest} from '../../api/postsApi'
 import './PostsPage.scss'
