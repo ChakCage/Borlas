@@ -1,4 +1,4 @@
-.text-button {
+@mixin text-button {
   // ширина
   width: fit-content;
   // текст
@@ -6,7 +6,6 @@
   font-weight: 400;
   font-size: 16px;
   line-height: 1.1;
-  color: black;
   text-decoration: none;
   transition: color ease .2s;
   // фон и границы
@@ -58,4 +57,31 @@
     }
   }
 
+  &_primary {
+    color: black;
+  }
+
+  &_soft{
+    color: red;
+    &:before {
+      position: absolute;
+      content: "";
+      width: 0;
+      bottom: 0;
+      left: 0;
+      border-top: 1.5px solid red;
+      transition: width ease .5s;
+    }
+    &:hover {
+      text-decoration: none;
+    }
+    &:hover:before {
+      width: 100%;
+    }
+  }
+
+}
+
+.text-button {
+  @include text-button
 }

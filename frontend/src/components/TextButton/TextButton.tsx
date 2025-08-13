@@ -14,7 +14,7 @@ export const TextButton: React.FC<TextButtonProps> = (props) => {
     const {isDisabled, text, onClick, theme} = props
 
     return (
-        <button className={"text-button"}
+        <button className={"text-button text-button_" + theme}
             onClick={onClick}
             disabled={isDisabled}
         >

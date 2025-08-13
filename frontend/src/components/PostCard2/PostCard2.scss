@@ -1,0 +1,98 @@
+@use "../TextButton/TextButton" as *;
+.post-card2 {
+  background:  #D3DCF3;
+  border-radius: 10px;
+  border: 1px solid black;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 12px 24px;
+  transition: box-shadow 0.3s ease;
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  &__header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+    margin: 0 16px 0 0;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 24px;
+    flex-shrink: 0;
+  }
+
+  &__btn {
+    @include text-button;
+    font-size: 14px;
+
+    &--edit {
+      color: black;
+    }
+
+    &--delete {
+      color: black;
+      margin-left: auto;
+    }
+
+    &--comment{
+      color: black;
+    }
+  }
+
+  &__content {
+    border-top: 1px solid #bbbbbb;
+    border-bottom: 1px solid #bbbbbb;
+    margin-left: -24px;
+    margin-right: -24px;
+    margin-bottom: 12px;
+
+    p {
+      margin: 12px 32px;
+      line-height: 1;
+      color: #555;
+      font-weight: 400;
+    }
+
+  }
+
+  &__footer {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__author{
+    font-size: 14px;
+    margin-right: 8px;
+  }
+
+  &__date {
+    font-size: 14px;
+    color: #888;
+  }
+
+  .post-card2__avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #bbb;
+    margin-right: 8px;
+  }
+
+  &__comments{
+    border-top: 1px solid #bbbbbb;
+    border-bottom: 1px solid #bbbbbb;
+    margin-left: -24px;
+    margin-right: -24px;
+    margin-bottom: 10px;
+  }
+
+}
