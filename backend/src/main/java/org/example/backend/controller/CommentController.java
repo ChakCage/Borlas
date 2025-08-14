@@ -6,8 +6,12 @@ import org.example.backend.dto.CommentRequest;
 import org.example.backend.dto.CommentResponse;
 import org.example.backend.dto.UnuversalOkResponce;
 import org.example.backend.mapper.CommentMapper;
-import org.example.backend.model.*;
-import org.example.backend.repository.*;
+import org.example.backend.model.Comment;
+import org.example.backend.model.Post;
+import org.example.backend.model.User;
+import org.example.backend.repository.CommentRepository;
+import org.example.backend.repository.PostRepository;
+import org.example.backend.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,7 +20,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,19 +39,18 @@ public class CommentController {
 
     /**
      * Создать комментарий (или ответ на другой комментарий).
-     * <p>
-     * Если в {@link CommentRequest#getParentCommentId()} передать id существующего комментария,
-     * новый комментарий будет считаться ответом на него.
      *
-     * @param request     DTO с данными комментария (postId, content, parentCommentId - опционально)
-     * @param userDetails текущий аутентифицированный пользователь — автор комментария
+     * @param request DTO с данными комментария
+     * @param userDetails текущий пользователь (автор комментария)
      * @return созданный комментарий
-     * @throws ResponseStatusException 404, если пост/пользователь/родительский комментарий не найдены
      */
     @PostMapping("/create")
-    public ResponseEntity<CommentResponse> createComment(@Valid @RequestBody CommentRequest request,
-                                                         @AuthenticationPrincipal UserDetails userDetails) {
-        // Находим пост по id, если нет — кидаем 404
+    public ResponseEntity<Map<String, Object>> createComment(@Valid @RequestBody CommentRequest request,
+                                                             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+
         Post post = postRepository.findById(request.getPostId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
 
@@ -69,105 +71,122 @@ public class CommentController {
         comment.setParentComment(parent);
 
         Comment saved = commentRepository.save(comment);
-        return ResponseEntity.ok(commentMapper.toDto(saved));
+        var ok = new UnuversalOkResponce(
+                commentMapper.toDto(saved),
+                "Комментарий создан",
+                HttpStatus.CREATED.value() + " " + HttpStatus.CREATED.getReasonPhrase()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(ok.getResponse());
     }
 
     /**
-     * Получить все комментарии к посту по id поста.
-     * Возвращаются в порядке возрастания времени создания.
+     * Получить все комментарии к посту.
      *
      * @param postId идентификатор поста
-     * @return список комментариев к указанному посту
+     * @return список комментариев
      */
     @GetMapping("/post/{postId}")
-    public List<CommentResponse> getCommentsByPost(@PathVariable UUID postId) {
-        return commentRepository.findByPost_IdOrderByCreatedDateAsc(postId)
+    public ResponseEntity<Map<String, Object>> getCommentsByPost(@PathVariable UUID postId) {
+        List<CommentResponse> list = commentRepository.findByPost_IdOrderByCreatedDateAsc(postId)
                 .stream()
                 .map(commentMapper::toDto)
                 .collect(Collectors.toList());
+
+        var ok = new UnuversalOkResponce(list, "Комментарии получены", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 
     /**
-     * Получить комментарий по его id.
+     * Получить отдельный комментарий по id.
      *
      * @param id идентификатор комментария
      * @return комментарий
-     * @throws java.util.NoSuchElementException если комментарий не найден (даст 500, как и раньше)
      */
     @GetMapping("/{id}")
-    public ResponseEntity<CommentResponse> getComment(@PathVariable UUID id) {
-        Comment comment = commentRepository.findById(id).orElseThrow();
-        return ResponseEntity.ok(commentMapper.toDto(comment));
+    public ResponseEntity<Map<String, Object>> getComment(@PathVariable UUID id) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        var ok = new UnuversalOkResponce(commentMapper.toDto(comment), "Комментарий получен", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 
     /**
-     * Обновить комментарий (только автор может менять свой комментарий).
-     * <p>
-     * Если новый текст пустой/пробельный, комментарий не перезаписывается,
-     * а помечается как удалённый (ставится {@code deletedDate}) и
-     * возвращается универсальный OK-ответ с сообщением об удалении.
+     * Обновить комментарий (может только автор).
+     * Если контент пустой — комментарий помечается удалённым.
      *
-     * @param id          идентификатор комментария
-     * @param request     новый текст комментария
-     * @param userDetails текущий пользователь
-     * @return обновлённый комментарий или универсальный ответ с сообщением об удалении,
-     *         403 если пользователь не автор комментария
+     * @param id идентификатор комментария
+     * @param request новый текст комментария
+     * @param userDetails текущий пользователь (автор)
+     * @return обновлённый комментарий или сообщение об удалении
      */
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateComment(@PathVariable UUID id,
-                                           @RequestBody CommentRequest request,
-                                           @AuthenticationPrincipal UserDetails userDetails) {
-        Comment comment = commentRepository.findById(id).orElseThrow();
-        User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
-
-        // Только автор может обновить свой комментарий!
-        if (!comment.getCreatedBy().getId().equals(user.getId())) {
-            return ResponseEntity.status(403).build();
+    public ResponseEntity<Map<String, Object>> updateComment(@PathVariable UUID id,
+                                                             @RequestBody CommentRequest request,
+                                                             @AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
 
-        // Если новый текст пустой или состоит только из пробелов — считаем, что пользователь хочет удалить комментарий
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (!comment.getCreatedBy().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can edit only your own comment");
+        }
+
+        // удаляем, если пусто
         if (request.getContent() == null || request.getContent().trim().isEmpty()) {
             comment.setDeletedDate(LocalDateTime.now());
             commentRepository.save(comment);
 
-            // Возвращаем специальный ответ с сообщением, что комментарий был удалён
-            var response = new UnuversalOkResponce(comment,
-                    "Комментарий был удалён, так как содержимое пустое.");
+            var response = new UnuversalOkResponce(
+                    commentMapper.toDto(comment),
+                    "Комментарий был удалён, так как содержимое пустое.",
+                    "200 OK"
+            );
             return ResponseEntity.ok(response.getResponse());
         }
 
-        // Обычное обновление комментария
         comment.setContent(request.getContent());
         comment.setEditedDate(LocalDateTime.now());
         Comment saved = commentRepository.save(comment);
 
-        return ResponseEntity.ok(commentMapper.toDto(saved));
+        var ok = new UnuversalOkResponce(commentMapper.toDto(saved), "Комментарий обновлён", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 
     /**
-     * Удалить комментарий (только автор).
-     * Помечает комментарий как удалённый (устанавливает {@code deletedDate}).
+     * Удалить комментарий (может только автор).
      *
-     * @param id          идентификатор комментария
-     * @param userDetails текущий пользователь
-     * @return 200 OK с сообщением об удалении; 401 если не авторизован; 403 если не автор
+     * @param id идентификатор комментария
+     * @param userDetails текущий пользователь (автор)
+     * @return результат удаления
      */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<?> deleteComment(@PathVariable UUID id,
-                                           @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<Map<String, Object>> deleteComment(@PathVariable UUID id,
+                                                             @AuthenticationPrincipal UserDetails userDetails) {
         if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
         }
-        Comment comment = commentRepository.findById(id).orElseThrow();
-        User user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
 
-        // Только автор может удалить свой комментарий!
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        User user = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
         if (!comment.getCreatedBy().getId().equals(user.getId())) {
-            return ResponseEntity.status(403).build();
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can delete only your own comment");
         }
 
         comment.setDeletedDate(LocalDateTime.now());
         commentRepository.save(comment);
-        return ResponseEntity.ok("Post with id: %s | Successfully Deleted");
+
+        var ok = new UnuversalOkResponce(null, "Комментарий помечен как удалён", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 }

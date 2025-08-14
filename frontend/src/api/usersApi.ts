@@ -15,7 +15,7 @@ export interface User {
 
 /** То, что принимает UserController (UserRequestDto) */
 export interface CreateOrUpdateUserRequest {
-    username: string;
+    username: string;                                               //ловить тот же самый объект на ок,
     email: string;
     password: string;
     bio?: string | null;
