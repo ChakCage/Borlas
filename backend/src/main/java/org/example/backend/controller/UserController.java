@@ -2,18 +2,23 @@ package org.example.backend.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.example.backend.dto.UnuversalOkResponce;
 import org.example.backend.dto.UserRequestDto;
 import org.example.backend.dto.UserResponseDto;
 import org.example.backend.exception.ConflictException;
 import org.example.backend.mapper.UserMapper;
 import org.example.backend.model.User;
 import org.example.backend.repository.UserRepository;
-import org.springframework.http.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -33,14 +38,19 @@ public class UserController {
      * @return созданный пользователь
      */
     @PostMapping("/create")
-    public ResponseEntity<UserResponseDto> create(@Valid @RequestBody UserRequestDto dto) {
+    public ResponseEntity<Map<String, Object>> create(@Valid @RequestBody UserRequestDto dto) {
         if (repo.existsByEmail(dto.getEmail()))
             throw new ConflictException("Этот email уже зарегистрирован");
         if (repo.existsByUsername(dto.getUsername()))
             throw new ConflictException("Этот username уже занят");
 
         User saved = repo.save(UserMapper.toEntity(dto));
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserMapper.toDto(saved));
+        var ok = new UnuversalOkResponce(
+                UserMapper.toDto(saved),
+                "Пользователь создан",
+                HttpStatus.CREATED.value() + " " + HttpStatus.CREATED.getReasonPhrase()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(ok.getResponse());
     }
 
     /**
@@ -49,12 +59,14 @@ public class UserController {
      * @return список пользователей
      */
     @GetMapping
-    public ResponseEntity<List<UserResponseDto>> getAll() {
+    public ResponseEntity<Map<String, Object>> getAll() {
         List<UserResponseDto> list = repo.findAll()
                 .stream()
                 .map(UserMapper::toDto)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(list);
+
+        var ok = new UnuversalOkResponce(list, "Список пользователей получен", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 
     /**
@@ -64,10 +76,12 @@ public class UserController {
      * @return пользователь
      */
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDto> getById(@PathVariable UUID id) {
-        return repo.findById(id)
-                .map(user -> ResponseEntity.ok(UserMapper.toDto(user)))
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+    public ResponseEntity<Map<String, Object>> getById(@PathVariable UUID id) {
+        var user = repo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("User with id %s not found", id)));
+
+        var ok = new UnuversalOkResponce(UserMapper.toDto(user), "Пользователь получен", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 
     /**
@@ -78,14 +92,16 @@ public class UserController {
      * @return обновлённый пользователь
      */
     @PutMapping("/update/{id}")
-    public ResponseEntity<UserResponseDto> update(@PathVariable UUID id,
-                                                  @Valid @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<Map<String, Object>> update(@PathVariable UUID id,
+                                                      @Valid @RequestBody UserRequestDto userRequestDto) {
         return repo.findById(id)
                 .map(user -> {
                     UserMapper.update(user, userRequestDto);
-                    return ResponseEntity.ok(UserMapper.toDto(repo.save(user)));
+                    var saved = repo.save(user);
+                    var ok = new UnuversalOkResponce(UserMapper.toDto(saved), "Пользователь обновлён", "200 OK");
+                    return ResponseEntity.ok(ok.getResponse());
                 })
-                .orElse(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("User with id %s not found", id)));
     }
 
     /**
@@ -96,11 +112,17 @@ public class UserController {
      * @return обновлённый пользователь
      */
     @PatchMapping("/me")
-    public ResponseEntity<UserResponseDto> patchMe(@AuthenticationPrincipal UserDetails userDetails,
-                                                   @RequestBody UserRequestDto userRequestDto) {
+    public ResponseEntity<Map<String, Object>> patchMe(@AuthenticationPrincipal UserDetails userDetails,
+                                                       @RequestBody UserRequestDto userRequestDto) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
         User user = repo.findByUsername(userDetails.getUsername()).orElseThrow();
         UserMapper.patch(user, userRequestDto);
-        return ResponseEntity.ok(UserMapper.toDto(repo.save(user)));
+        var saved = repo.save(user);
+
+        var ok = new UnuversalOkResponce(UserMapper.toDto(saved), "Профиль обновлён", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 
     /**
@@ -110,11 +132,12 @@ public class UserController {
      * @return сообщение об удалении
      */
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<String> delete(@PathVariable UUID id) {
-        if (repo.existsById(id)) {
-            repo.deleteById(id);
-            return ResponseEntity.ok(String.format("User with id: %s | Successfully Deleted", id));
+    public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id) {
+        if (!repo.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("User with id %s not found", id));
         }
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        repo.deleteById(id);
+        var ok = new UnuversalOkResponce(null, "Пользователь удалён", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 }
