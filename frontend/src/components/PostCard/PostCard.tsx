@@ -1,6 +1,7 @@
 import React from 'react'
 import {Post} from '../../api/postsApi'
 import './PostCard.scss'
+import {formatDate} from "../../utils/dateUtil"
 
 interface PostCardProps {
     post: Post;
@@ -9,15 +10,6 @@ interface PostCardProps {
 }
 
 export const PostCard: React.FC<PostCardProps> = ({post, onEdit, onDelete}) => {
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('ru-RU', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        })
-    }
 
     return (
         <div className="post-card">
