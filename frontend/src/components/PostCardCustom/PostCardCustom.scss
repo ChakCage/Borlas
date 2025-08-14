@@ -1,11 +1,13 @@
 @use "../TextButton/TextButton" as *;
+
 .post-card2 {
-  background:  #D3DCF3;
+  background: #D3DCF3;
   border-radius: 10px;
   border: 1px solid black;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 12px 24px;
   transition: box-shadow 0.3s ease;
+
   &:hover {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   }
@@ -42,7 +44,7 @@
       margin-left: auto;
     }
 
-    &--comment{
+    &--comment {
       color: black;
     }
   }
@@ -68,7 +70,7 @@
     flex-direction: column;
   }
 
-  &__author{
+  &__author {
     font-size: 14px;
     margin-right: 8px;
   }
@@ -87,7 +89,7 @@
     margin-right: 8px;
   }
 
-  &__comments{
+  &__comments {
     border-top: 1px solid #bbbbbb;
     border-bottom: 1px solid #bbbbbb;
     margin-left: -24px;

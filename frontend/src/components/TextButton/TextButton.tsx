@@ -4,7 +4,7 @@ import {TextButtonTheme} from "../../types/BtnThemeEnum"
 
 interface TextButtonProps {
     text: string
-    onClick: () => void
+    onClick: (e:any) => void
     theme?: TextButtonTheme
     isDisabled?: boolean
 }
