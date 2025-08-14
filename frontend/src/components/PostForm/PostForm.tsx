@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect, useCallback} from 'react'
 import {Post, CreatePostRequest} from '../../api/postsApi'
 import './PostForm.scss'
 
@@ -25,12 +25,10 @@ export const PostForm: React.FC<PostFormProps> = ({
         }
     }, [post])
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = useCallback((e: React.FormEvent) => {
         e.preventDefault()
-        if (title.trim() && content.trim()) {
-            onSubmit({title: title.trim(), content: content.trim()})
-        }
-    }
+        if (title && content) onSubmit({title, content})
+    }, [title, content, onSubmit])
 
     return (
         <div className="post-form">

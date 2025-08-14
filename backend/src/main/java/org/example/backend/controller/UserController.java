@@ -137,7 +137,7 @@ public class UserController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("User with id %s not found", id));
         }
         repo.deleteById(id);
-        var ok = new UnuversalOkResponce(null, "Пользователь удалён", "200 OK");
+        var ok = new UnuversalOkResponce(List.of(), "Пользователь удалён", "200 OK");
         return ResponseEntity.ok(ok.getResponse());
     }
 }

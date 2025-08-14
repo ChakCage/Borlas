@@ -52,11 +52,11 @@ public class PostController {
         var saved = postRepo.save(postMapper.toEntity(dto, author));
 
         var ok = new UnuversalOkResponce(
-                postMapper.toDto(saved),
+                List.of(postMapper.toDto(saved)),
                 "Пост создан",
                 HttpStatus.CREATED.value() + " " + HttpStatus.CREATED.getReasonPhrase()
         );
-        return ResponseEntity.status(HttpStatus.CREATED).body(ok.getResponse());
+        return ResponseEntity.ok(ok.getResponse());
     }
 
     /**
@@ -66,9 +66,9 @@ public class PostController {
      */
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAll() {
-        List<PostResponse> list = postRepo.findAll().stream().map(postMapper::toDto).collect(Collectors.toList());
-        var ok = new UnuversalOkResponce(list, "Список постов получен", "200 OK");
-        return ResponseEntity.ok(ok.getResponse());
+        List<PostResponse> postsList = postRepo.findAll().stream().map(postMapper::toDto).collect(Collectors.toList());
+        var unuversalOkResponce = new UnuversalOkResponce(postsList, "Список постов получен", "200 OK");
+        return ResponseEntity.ok(unuversalOkResponce.getResponse());
     }
 
     /**
@@ -82,8 +82,8 @@ public class PostController {
         var post = postRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Post with id %s not found", id)));
 
-        var ok = new UnuversalOkResponce(postMapper.toDto(post), "Пост получен", "200 OK");
-        return ResponseEntity.ok(ok.getResponse());
+        var unuversalOkResponce = new UnuversalOkResponce(List.of(postMapper.toDto(post)), "Пост получен", "200 OK");
+        return ResponseEntity.ok(unuversalOkResponce.getResponse());
     }
 
     /**
@@ -107,7 +107,7 @@ public class PostController {
                     post.setContent(dto.getContent());
                     post.setUpdatedDate(java.time.LocalDateTime.now());
                     var saved = postRepo.save(post);
-                    var ok = new UnuversalOkResponce(postMapper.toDto(saved), "Пост обновлён", "200 OK");
+                    var ok = new UnuversalOkResponce(List.of(postMapper.toDto(saved)), "Пост обновлён", "200 OK");
                     return ResponseEntity.ok(ok.getResponse());
                 })
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Post with id %s not found", id)));

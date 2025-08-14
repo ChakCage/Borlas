@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { postsApi, Post, CreatePostRequest } from '../../api/postsApi';
+import {postsApi, Post, CreatePostRequest, OkResponse} from '../../api/postsApi'
 
 interface PostsState {
   posts: Post[];
@@ -26,7 +26,7 @@ export const fetchUserActivePosts = createAsyncThunk(
   'posts/fetchUserActivePosts',
   async (login: string) => {
     const response = await postsApi.getActivePosts(login);
-    return response;
+    return response.data;
   }
 );
 
@@ -34,7 +34,7 @@ export const fetchUserDeletedPosts = createAsyncThunk(
   'posts/fetchUserDeletedPosts',
   async (login: string) => {
     const response = await postsApi.getDeletedPosts(login);
-    return response;
+    return response.data;
   }
 );
 
@@ -42,7 +42,7 @@ export const createPost = createAsyncThunk(
   'posts/createPost',
   async (postData: CreatePostRequest) => {
     const response = await postsApi.createPost(postData);
-    return response;
+    return response.data;
   }
 );
 
@@ -50,7 +50,7 @@ export const updatePost = createAsyncThunk(
   'posts/updatePost',
   async ({ id, postData }: { id: string; postData: CreatePostRequest }) => {
     const response = await postsApi.updatePost(id, postData);
-    return response;
+    return response.data;
   }
 );
 
@@ -80,9 +80,9 @@ const postsSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(fetchPosts.fulfilled, (state, action: PayloadAction<Post[]>) => {
+      .addCase(fetchPosts.fulfilled, (state, action: PayloadAction<OkResponse>) => {
         state.isLoading = false;
-        state.posts = action.payload;
+        state.posts = action.payload.data;
       })
       .addCase(fetchPosts.rejected, (state, action) => {
         state.isLoading = false;
@@ -101,7 +101,7 @@ const postsSlice = createSlice({
         state.isLoading = false;
         state.error = action.error.message || 'Ошибка загрузки активных постов';
       })
-      // fetchUserDeletedPosts
+      // // fetchUserDeletedPosts
       .addCase(fetchUserDeletedPosts.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -119,26 +119,26 @@ const postsSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(createPost.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.isLoading = false;
-        state.posts.unshift(action.payload);
-      })
-      .addCase(createPost.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.error.message || 'Ошибка создания поста';
-      })
-      // updatePost
-      .addCase(updatePost.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(updatePost.fulfilled, (state, action: PayloadAction<Post>) => {
-        state.isLoading = false;
-        const index = state.posts.findIndex(post => post.id === action.payload.id);
-        if (index !== -1) {
-          state.posts[index] = action.payload;
-        }
-      })
+      // .addCase(createPost.fulfilled, (state, action: PayloadAction<OkResponse>) => {
+      //   state.isLoading = false;
+      //   state.posts.unshift(action.payload.data);
+      // })
+      // .addCase(createPost.rejected, (state, action) => {
+      //   state.isLoading = false;
+      //   state.error = action.error.message || 'Ошибка создания поста';
+      // })
+      // // updatePost
+      // .addCase(updatePost.pending, (state) => {
+      //   state.isLoading = true;
+      //   state.error = null;
+      // })
+      // .addCase(updatePost.fulfilled, (state, action: PayloadAction<Post>) => {
+      //   state.isLoading = false;
+      //   const index = state.posts.findIndex(post => post.id === action.payload.id);
+      //   if (index !== -1) {
+      //     state.posts[index] = action.payload;
+      //   }
+      // })
       .addCase(updatePost.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || 'Ошибка обновления поста';
