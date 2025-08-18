@@ -4,9 +4,10 @@ import {TextButtonTheme} from "../../types/BtnThemeEnum"
 
 interface TextButtonProps {
     text: string
-    onClick: (e:any) => void
+    onClick?: () => void
     theme?: TextButtonTheme
     isDisabled?: boolean
+    className?: string;
 }
 
 export const TextButton: React.FC<TextButtonProps> = (props) => {
