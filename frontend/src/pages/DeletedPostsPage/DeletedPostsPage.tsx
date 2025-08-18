@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {useAppDispatch, useAppSelector} from '../../store/hooks'
 import {clearPosts, fetchUserDeletedPosts} from '../../store/slices/postsSlice'
-import {PostCard} from '../../components/PostCard/PostCard'
+import {PostCard} from '../../components/PostCard2/PostCard2'
 import './DeletedPostsPage.scss'
 
 export const DeletedPostsPage: React.FC = () => {
