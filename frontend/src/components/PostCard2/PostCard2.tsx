@@ -1,6 +1,7 @@
 import React from 'react'
 import {Post} from '../../api/postsApi'
 import './PostCard2.scss'
+import {TextButton} from "../TextButton/TextButton";
 
 interface PostCardProps {
     post: Post;
@@ -33,23 +34,21 @@ export const PostCard: React.FC<PostCardProps> = ({post, onEdit, onDelete}) => {
             <div className="post-card2__content">
                 <p>{post.content}</p>
             </div>
-            <div className="post-card2__comments">
+            {/*<div className="post-card2__comments">
                 <p></p>
-            </div>
+            </div>*/}
             <div className="post-card2__footer">
                 <div className="post-card2__actions">
-                    <button
+                    <TextButton
                         className="post-card2__btn post-card2__btn--comment"
-                        >
-                        Комментировать
-                    </button>
+                        text = "Комментировать"
+                    />
                     {onEdit && (
-                        <button
+                        <TextButton
                             className="post-card2__btn post-card2__btn--edit"
                             onClick={() => onEdit(post)}
-                        >
-                            Редактировать
-                        </button>
+                            text="Редактировать"
+                        />
                     )}
                     {onDelete && (
                         <button

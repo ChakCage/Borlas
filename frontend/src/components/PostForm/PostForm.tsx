@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import {Post, CreatePostRequest} from '../../api/postsApi'
 import './PostForm.scss'
+import {TextButton} from "../TextButton/TextButton";
 
 interface PostFormProps {
     post?: Post;
@@ -72,14 +73,12 @@ export const PostForm: React.FC<PostFormProps> = ({
                 </div>
 
                 <div className="post-form__actions">
-                    <button
-                        type="button"
+                    <TextButton
+                        text="Отмена"
                         onClick={onCancel}
                         className="post-form__btn post-form__btn--cancel"
-                        disabled={isLoading}
-                    >
-                        Отмена
-                    </button>
+                        isDisabled={isLoading}
+                    />
                     <button
                         type="submit"
                         className="post-form__btn post-form__btn--submit"
