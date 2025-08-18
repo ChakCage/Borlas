@@ -5,7 +5,7 @@ import { items } from './SideItems' // импортируем список
 
 interface SidebarItemProps {
     to: string
-    icon?: React.ReactNode // эмодзи :)
+    icon?: React.ReactNode
     children: string
     isActive: boolean
 }
