@@ -1,4 +1,4 @@
-@mixin text-button {
+.text-button {
   // ширина
   width: fit-content;
   // текст
@@ -6,6 +6,7 @@
   font-weight: 400;
   font-size: 16px;
   line-height: 1.1;
+  color: black;
   text-decoration: none;
   transition: color ease .2s;
   // фон и границы
@@ -80,8 +81,4 @@
     }
   }
 
-}
-
-.text-button {
-  @include text-button
 }

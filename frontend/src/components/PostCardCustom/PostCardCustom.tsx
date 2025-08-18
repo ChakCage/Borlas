@@ -4,6 +4,7 @@ import './PostCardCustom.scss'
 import {formatDate} from "../../utils/dateUtil"
 import {TextButton} from "../TextButton/TextButton"
 import {Button} from "../button/Button"
+import {User} from "../../api/usersApi";
 
 interface PostCardProps {
     post: Post;
@@ -23,7 +24,7 @@ export const PostCardCustom: React.FC<PostCardProps> = ({post, onEdit, onDelete}
                 <h3 className="post-card2__title">{post.title}</h3>
                 <span className="post-card2__avatar"></span>
                 <div className="post-card2__container">
-                    <span className="post-card2__author">{post.authorId}</span>
+                    <span className="post-card2__author">{post.authorUsername}</span>
                     <span
                         className="post-card2__date">{post.updatedDate ? formatDate(post.updatedDate) : formatDate(post.createdDate)}</span>
                 </div>
@@ -32,12 +33,12 @@ export const PostCardCustom: React.FC<PostCardProps> = ({post, onEdit, onDelete}
             <div className="post-card2__content">
                 <p>{post.content}</p>
             </div>
-            <div className="post-card2__comments">
+            {/*<div className="post-card2__comments">
                 <p></p>
-            </div>
+            </div>*/}
             <div className="post-card2__footer">
                 <div className="post-card2__actions">
-                    <TextButton text={"Комментировать"} onClick={commentAction}/>
+                    {/*<TextButton text={"Комментировать"} onClick={commentAction}/>*/}
                     {onEdit && <TextButton
                         text={"Редактировать"}
                         onClick={() => onEdit(post)}
