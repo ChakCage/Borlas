@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {useAppDispatch, useAppSelector} from '../../store/hooks'
 import {fetchUserActivePosts, updatePost, deletePost, clearPosts} from '../../store/slices/postsSlice'
-import {PostCard} from '../../components/PostCard/PostCard'
+import {PostCardCustom} from '../../components/PostCardCustom/PostCardCustom'
 import {PostForm} from '../../components/PostForm/PostForm'
 import {Post, CreatePostRequest} from '../../api/postsApi'
 import './MyPostsPage.scss'
@@ -108,7 +108,7 @@ export const MyPostsPage: React.FC = () => {
                 ) : (
                     <div className="my-posts-page__posts">
                         {posts.map(post => (
-                            <PostCard
+                            <PostCardCustom
                                 key={post.id}
                                 post={post}
                                 onEdit={handleEditPost}

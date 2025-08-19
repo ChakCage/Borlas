@@ -1,0 +1,83 @@
+.profile-page {
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  margin: 20px auto;
+  font-family: Arial, sans-serif;
+
+  .profile-avatar {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+
+    .avatar-placeholder {
+      width: 100px;
+      height: 100px;
+      background: #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #444;
+      cursor: pointer;
+    }
+
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 4px;
+      object-fit: cover;
+      cursor: pointer;
+    }
+  }
+
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+
+    .profile-username {
+      font-size: 20px;
+      font-weight: bold;
+      border: none;
+      outline: none;
+      margin-bottom: 10px;
+    }
+
+    .profile-bio {
+      width: 100%;
+      min-height: 60px;
+      border-radius: 5px;
+      border: none;
+      padding: 10px;
+      font-size: 14px;
+      background: #f3f3f3;
+      resize: none;
+    }
+  }
+
+  .profile-actions {
+    margin-top: 15px;
+
+    button {
+      border: 1px solid #000;
+      background: #fff;
+      padding: 5px 12px;
+      margin-right: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 14px;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+
+    .save-btn {
+      font-weight: bold;
+    }
+
+    .cancel-btn {
+      color: #444;
+    }
+  }
+}

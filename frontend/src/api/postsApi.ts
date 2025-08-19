@@ -7,6 +7,8 @@ export interface Post {
     createdDate: string;
     updatedDate: string;
     authorId: string;
+    authorUsername: string;
+    isDeleted: string
 }
 
 export interface OkResponse {

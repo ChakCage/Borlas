@@ -1,5 +1,3 @@
-@use "../TextButton/TextButton" as *;
-
 .post-card2 {
   background: #D3DCF3;
   border-radius: 10px;
@@ -32,7 +30,6 @@
   }
 
   &__btn {
-    @include text-button;
     font-size: 14px;
 
     &--edit {
