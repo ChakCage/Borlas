@@ -12,8 +12,8 @@ import './App.scss'
 import {Button} from "./components/button/Button"
 import {TextButton} from "./components/TextButton/TextButton"
 import {ButtonTheme, TextButtonTheme} from "./types/BtnThemeEnum"
-import ProfilePage from "./pages/MyProfilePage/MyProfilePage";
-import AuthModal from "./pages/AuthModal/AuthModal";
+// import ProfilePage from "./pages/MyProfilePage/MyProfilePage";
+// import AuthModal from "./pages/AuthModal/AuthModal";
 
 function App() {
     setAuthToken("testuser", "yourpassword")
@@ -35,24 +35,11 @@ function App() {
                     <Sidebar/>
                     <main className="App__main">
                         <Routes>
-                            <Route path="/" element={<AuthModal/>}/>
+                            <Route path="/" element={<PostsPage/>}/>
                             <Route path="/posts" element={<PostsPage/>}/>
                             <Route path="/create" element={<CreatePostPage/>}/>
                             <Route path="/my-posts" element={<MyPostsPage/>}/>
                             <Route path="/deleted" element={<DeletedPostsPage/>}/>
-                            <Route path="/my-profile" element={<ProfilePage/>}/>
-                            {/*<Route path="/testView" element={
-                                <div style={{padding: "100px", display: "flex", flexDirection: "column", gap: "15px"}}>
-                                    <Button text={"Button Primary"} onClick={onClickBtn}/>
-                                    <Button text={"Button Primary disabled"} onClick={onClickBtn} isDisabled={true}/>
-                                    <Button text={"Button Soft"} onClick={onClickBtn} theme={ButtonTheme.Soft}/>
-                                    <Button text={"Button Soft disabled"} onClick={onClickBtn} theme={ButtonTheme.Soft}
-                                            isDisabled={true}/>
-                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Primary}/>
-                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Primary} isDisabled={true}/>
-                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Soft}/>
-                                    <TextButton text={"Комментировать"} onClick={onClickTxtBtn} theme={TextButtonTheme.Soft} isDisabled={true}/>
-                                </div>}/>*/}
                         </Routes>
                     </main>
                 </div>
