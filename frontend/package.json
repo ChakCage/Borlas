@@ -28,7 +28,12 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+
+    "prebuild:spring": "echo Preparing frontend before spring build!",
+
+
+    "build:spring": "npm run build && npx copyfiles -u 1 \"build/**/*\" \"../backend/src/main/resources/static\""
   },
   "eslintConfig": {
     "extends": [

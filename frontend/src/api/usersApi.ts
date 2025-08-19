@@ -1,6 +1,6 @@
 import { api } from './axios';
 
-/** То, что возвращает UserController (UserResponseDto) */
+/** Что возвращает UserController (UserResponseDto) */
 export interface User {
     id: string;
     username: string;
@@ -13,7 +13,7 @@ export interface User {
     updatedAt: string;
 }
 
-/** То, что принимает UserController (UserRequestDto) */
+/** Что принимает UserController (UserRequestDto) */
 export interface CreateOrUpdateUserRequest {
     username: string;
     email: string;
@@ -29,10 +29,10 @@ export type PatchMeRequest = Partial<CreateOrUpdateUserRequest>;
 
 /** Универсальный OK-ответ от бэка */
 export interface OkResponse<T> {
-    data: T;            // полезная нагрузка (список, объект или строка)
-    message: string;    // “что произошло и как”
-    status: string;     // “200 OK”, “404 Not Found”, и т.п.
-    error?: string;     // пусто при OK, текст при ошибке
+    data: T;             // полезная нагрузка (список, объект, строка и т.п.)
+    message: string;     // «что произошло и как»
+    status: string;      // "200 OK", "404 Not Found" и т.д.
+    error?: string;      // пусто при OK, текст при ошибке
 }
 
 export const usersApi = {
@@ -67,8 +67,7 @@ export const usersApi = {
     },
 
     /** DELETE /api/users/delete/{id}
-     * Ожидаем, что бэк тоже вернёт универсальный ответ:
-     * { data: "User with id... | Successfully Deleted", message, status, error? }
+     * ожидаем универсальный ответ: { data: "User with id ... | Successfully Deleted", ... }
      */
     deleteUser: async (id: string): Promise<OkResponse<string>> => {
         const { data } = await api.delete<OkResponse<string>>(`/users/delete/${id}`);
