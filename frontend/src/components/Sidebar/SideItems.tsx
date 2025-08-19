@@ -9,4 +9,6 @@ export const items = [
     { to: '/my-posts', icon: <PersonIcon />, label: 'Мои посты' },
     { to: '/deleted', icon: <DeleteIcon />, label: 'Удаленные посты' },
     // { to: '/testView', icon: null, label: 'Тестовый экран' },
+
+
 ];

@@ -49,7 +49,15 @@ export const usersApi = {
     },
 
     /** POST /api/users/create */
-    createUser: async (payload: CreateOrUpdateUserRequest): Promise<OkResponse<User>> => {
+    createUser: async (payload: {
+        email: string;
+        password: string;
+        username: string;
+        bio: null;
+        avatarUrl: null;
+        birthDate: string | null;
+        gender: string | null
+    }): Promise<OkResponse<User>> => {
         const { data } = await api.post<OkResponse<User>>('/users/create', payload);
         return data;
     },

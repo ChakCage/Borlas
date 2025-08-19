@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {useAuth} from "../../context/AuthContext";
+import { login } from '../../api/axios';
 import './AuthModal.scss';
+import {usersApi} from "../../api/usersApi";
 
 const AuthModal: React.FC = () => {
     const [isLoginMode, setIsLoginMode] = useState(true);
@@ -9,6 +13,9 @@ const AuthModal: React.FC = () => {
     const [birthDate, setBirthDate] = useState('');
     const [gender, setGender] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const [isLoading, setIsLoading] = useState(false);
+    const { login: authLogin } = useAuth();
+    const navigate = useNavigate();
 
     // Автоформатирование и валидация даты рождения
     useEffect(() => {
@@ -91,8 +98,9 @@ const AuthModal: React.FC = () => {
         return true;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
         const newErrors: Record<string, string> = {};
 
         // Валидация email
@@ -128,24 +136,43 @@ const AuthModal: React.FC = () => {
         // Если есть ошибки - показываем их и прерываем отправку
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
+            setIsLoading(false);
             return;
         }
 
         // Здесь будет вызов API для авторизации/регистрации
-        if (isLoginMode) {
-            console.log('Авторизация:', { email, password });
-            // Реальная авторизация:
-            // await authApi.login(email, password);
-        } else {
-            const userData = {
-                email,
-                password,
-                birthDate: birthDate || null,
-                gender
-            };
-            console.log('Регистрация:', userData);
-            // Реальная регистрация:
-            // await authApi.register(userData);
+        try {
+            if (isLoginMode) {
+                // Реальная авторизация
+                const response = await login(email, password);
+                authLogin(response.accessToken, response.refreshToken);
+                navigate('/posts'); // Перенаправление после успешного входа
+            } else {
+                // Регистрация - здесь нужно добавить вызов API регистрации
+
+                const userData = {
+                    email,
+                    password,
+                    username: email.split('@')[0], // Генерируем username из email
+                    bio: null,
+                    avatarUrl: null,
+                    birthDate: birthDate || null,
+                    gender: gender || null
+                };
+
+                await usersApi.createUser(userData);
+
+                // После успешной регистрации автоматически входим
+                const response = await login(email, password);
+                authLogin(response.accessToken, response.refreshToken);
+                navigate('/posts');
+                console.log('Регистрация:', userData);
+
+            }
+        } catch (error: any) {
+            setErrors({ submit: error.response?.data?.message || 'Ошибка авторизации' });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -252,10 +279,15 @@ const AuthModal: React.FC = () => {
                             </div>
                         </>
                     )}
-
+                    {errors.submit && (
+                        <div className="error-message submit-error">{errors.submit}</div>
+                    )}
                     <div className="form-actions">
-                        <button type="submit" className="primary-btn">
-                            {isLoginMode ? 'Войти' : 'Зарегистрироваться'}
+                        <button
+                            type="submit"
+                            className="primary-btn"
+                            disabled={isLoading}>
+                            {isLoading ? 'Загрузка...' : isLoginMode ? 'Войти' : 'Зарегистрироваться'}
                         </button>
                     </div>
                 </form>
@@ -269,8 +301,7 @@ const AuthModal: React.FC = () => {
                             onClick={() => {
                                 setIsLoginMode(!isLoginMode);
                                 setErrors({});
-                            }}
-                        >
+                            }}>
                             {isLoginMode ? ' Зарегистрироваться' : ' Войти'}
                         </button>
                     </p>
