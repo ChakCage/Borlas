@@ -27,6 +27,8 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AuthRequest req) {
         // проверяем логин/пароль
+        System.out.println("Login attempt: " + req.getUsername());
+        System.out.println("Password length: " + (req.getPassword() != null ? req.getPassword().length() : 0));
         authManager.authenticate(new UsernamePasswordAuthenticationToken(req.getUsername(), req.getPassword()));
 
         UserDetails user = users.loadUserByUsername(req.getUsername());
