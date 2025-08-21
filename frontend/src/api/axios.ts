@@ -1,13 +1,15 @@
 import axios, { AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
-/** базовый URL — можно вынести в .env (VITE_API_BASE_URL) */
+/** Базовый URL — читаем из Vite/CRA и даём дефолт */
 const BASE_URL =
-    (import.meta as any)?.env?.VITE_API_BASE_URL ?? 'http://localhost:8080/api';
+    (import.meta as any)?.env?.VITE_API_BASE_URL ??
+    process.env.REACT_APP_API_BASE_URL ??
+    'http://localhost:8080/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  withCredentials: false, // мы на JWT, без cookie-сессий
+  withCredentials: false, // JWT без cookie-сессий
 });
 
 /* =======================
@@ -39,7 +41,7 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
   if (token) {
     config.headers = config.headers ?? {};
-    config.headers['Authorization'] = `Bearer ${token}`;
+    (config.headers as any)['Authorization'] = `Bearer ${token}`;
   }
   return config;
 });
@@ -88,11 +90,9 @@ api.interceptors.response.use(
           const rt = getRefreshToken();
           if (!rt) throw new Error('No refresh token');
 
-          // важный момент: refresh делаем ПРЯМО через axios (без интерцепторов),
-          // иначе получим рекурсию.
+          // refresh делаем ПРЯМО через axios (без интерцепторов), иначе рекурсия
           const resp = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken: rt });
 
-          // Бэк отдаёт universal OK-ответ; достанем токены гибко:
           const ok = resp.data;
           const access =
               ok?.data?.token?.accessToken ?? ok?.data?.accessToken ?? ok?.accessToken;
@@ -117,13 +117,12 @@ api.interceptors.response.use(
 );
 
 /* =======================
-   УТИЛИТЫ ДЛЯ ЛОГИНА/ЛОГАУТА
-   (опционально, удобно вызывать из формы)
+   АВТОРИЗАЦИЯ
    ======================= */
 
 /** Логин: дергает /auth/login и кладёт токены в localStorage */
-export async function login(username: string, password: string) {
-  const { data } = await api.post('/auth/login', { username, password });
+export async function login(loginOrEmail: string, password: string) {
+  const { data } = await api.post('/auth/login', { username: loginOrEmail, password });
   const access =
       data?.data?.token?.accessToken ?? data?.data?.accessToken ?? data?.accessToken;
   const refresh =
@@ -137,26 +136,10 @@ export function logout() {
   clearTokens();
 }
 
-// --- Back-compat wrappers (deprecated) ---
-export async function setAuthToken(username: string, password: string): Promise<void> {
-  // старый вызов теперь просто делает JWT-логин и кладёт токены
-  await login(username, password);
+export async function setAuthToken(usernameOrEmail: string, password: string): Promise<void> {
+  await login(usernameOrEmail, password);
 }
 
 export function clearAuthToken(): void {
-  // старый вызов теперь чистит JWT-токены
   logout();
 }
-
-
-/* =======================
-   ЕСЛИ НУЖНО ВРЕМЕННО BASIC AUTH
-   (старый способ — НЕ РЕКОМЕНДУЮ с JWT вместе)
-   ======================= */
-// export const setBasicAuth = (username: string, password: string) => {
-//   const token = btoa(`${username}:${password}`);
-//   api.defaults.headers.common['Authorization'] = `Basic ${token}`;
-// };
-// export const clearBasicAuth = () => {
-//   delete api.defaults.headers.common['Authorization'];
-// };

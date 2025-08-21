@@ -8,18 +8,23 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
+
     @Autowired
     private UserRepository userRepository;
 
+    /**
+     * login может быть И username, И email.
+     */
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
+    public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+        User user = userRepository.findByUsername(login)
+                .or(() -> userRepository.findByEmail(login))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + login));
 
         return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getUsername())
+                .username(user.getUsername())   // в security-User кладём username
                 .password(user.getPasswordHash())
-                .roles("USER")
+                .roles("USER")                  // даст "ROLE_USER"
                 .build();
     }
 }

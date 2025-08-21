@@ -17,19 +17,26 @@ const AuthModal: React.FC = () => {
     const { login: authLogin } = useAuth();
     const navigate = useNavigate();
 
-    // Автоформатирование и валидация даты рождения
+    // helper’ы
+    const toIso = (d: string | null) =>
+        d && /^\d{2}\.\d{2}\.\d{4}$/.test(d) ? d.split('.').reverse().join('-') : null;
+
+    const usernameFromEmail = (mail: string) => {
+        const base = (mail.split('@')[0] ?? '')
+            .toLowerCase()
+            .replace(/[^a-z0-9_-]/g, '')
+            .slice(0, 30);
+        return base.length >= 3 ? base : (`user_${Date.now()}`).slice(0, 30);
+    };
+
+    // автоформат и проверка даты
     useEffect(() => {
         if (birthDate.length === 2 || birthDate.length === 5) {
             setBirthDate(prev => prev + '.');
         }
-
-        // Проверка при изменении значения
-        if (birthDate.length === 10) {
-            validateBirthDate();
-        }
+        if (birthDate.length === 10) validateBirthDate();
     }, [birthDate]);
 
-    // Функция для проверки корректности даты
     const validateBirthDate = (): boolean => {
         if (!birthDate) return true;
 
@@ -44,137 +51,98 @@ const AuthModal: React.FC = () => {
         const monthNum = parseInt(month, 10);
         const yearNum = parseInt(year, 10);
 
-        // Проверка на числа
         if (isNaN(dayNum) || isNaN(monthNum) || isNaN(yearNum)) {
             setErrors(prev => ({ ...prev, birthDate: 'Дата должна содержать только цифры' }));
             return false;
         }
 
-        // Проверка года (от 1900 до текущего года)
         const currentYear = new Date().getFullYear();
         if (yearNum < 1900 || yearNum > currentYear) {
             setErrors(prev => ({ ...prev, birthDate: `Год должен быть между 1900 и ${currentYear}` }));
             return false;
         }
 
-        // Проверка месяца
         if (monthNum < 1 || monthNum > 12) {
             setErrors(prev => ({ ...prev, birthDate: 'Месяц должен быть от 01 до 12' }));
             return false;
         }
 
-        // Проверка дня
         const daysInMonth = new Date(yearNum, monthNum, 0).getDate();
         if (dayNum < 1 || dayNum > daysInMonth) {
             setErrors(prev => ({ ...prev, birthDate: `В этом месяце должно быть от 01 до ${daysInMonth} дней` }));
             return false;
         }
 
-        // Проверка на будущую дату
         const birthDateObj = new Date(yearNum, monthNum - 1, dayNum);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); // Сбрасываем время для точного сравнения
+        const today = new Date(); today.setHours(0, 0, 0, 0);
         if (birthDateObj > today) {
             setErrors(prev => ({ ...prev, birthDate: 'Дата рождения не может быть в будущем' }));
             return false;
         }
 
-        // Проверка минимального возраста (12 лет)
-        const minAgeDate = new Date();
-        minAgeDate.setFullYear(minAgeDate.getFullYear() - 12);
-        minAgeDate.setHours(0, 0, 0, 0);
+        const minAgeDate = new Date(); minAgeDate.setFullYear(minAgeDate.getFullYear() - 12); minAgeDate.setHours(0,0,0,0);
         if (birthDateObj > minAgeDate) {
             setErrors(prev => ({ ...prev, birthDate: 'Минимальный возраст - 12 лет' }));
             return false;
         }
 
-        // Если все проверки пройдены, очищаем ошибку
-        setErrors(prev => {
-            const newErrors = { ...prev };
-            delete newErrors.birthDate;
-            return newErrors;
-        });
-
+        setErrors(prev => { const n = { ...prev }; delete n.birthDate; return n; });
         return true;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
+
         const newErrors: Record<string, string> = {};
+        if (!email) newErrors.email = 'Введите email';
+        else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Некорректный email';
 
-        // Валидация email
-        if (!email) {
-            newErrors.email = 'Введите email';
-        } else if (!/\S+@\S+\.\S+/.test(email)) {
-            newErrors.email = 'Некорректный email';
-        }
+        if (!password) newErrors.password = 'Введите пароль';
+        else if (password.length < 6) newErrors.password = 'Пароль должен быть не менее 6 символов';
 
-        // Валидация пароля
-        if (!password) {
-            newErrors.password = 'Введите пароль';
-        } else if (password.length < 6) {
-            newErrors.password = 'Пароль должен быть не менее 6 символов';
-        }
-
-        // Дополнительные проверки для регистрации
         if (!isLoginMode) {
-            if (password !== confirmPassword) {
-                newErrors.confirmPassword = 'Пароли не совпадают';
-            }
-
-            // Проверка даты рождения, если она указана
-            if (birthDate && birthDate.length > 0) {
-                const isValidDate = validateBirthDate();
-                if (!isValidDate) {
-                    // Ошибка уже установлена в validateBirthDate
-                    newErrors.birthDate = errors.birthDate || 'Некорректная дата рождения';
-                }
+            if (password !== confirmPassword) newErrors.confirmPassword = 'Пароли не совпадают';
+            if (birthDate && birthDate.length > 0 && !validateBirthDate()) {
+                newErrors.birthDate = errors.birthDate || 'Некорректная дата рождения';
             }
         }
 
-        // Если есть ошибки - показываем их и прерываем отправку
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             setIsLoading(false);
             return;
         }
 
-        // Здесь будет вызов API для авторизации/регистрации
         try {
             if (isLoginMode) {
-                // Реальная авторизация
-                const response = await login(email, password);
-                authLogin(response.accessToken, response.refreshToken);
-                navigate('/posts'); // Перенаправление после успешного входа
+                // В бэке login может быть email или username, поэтому передаём email
+                const { accessToken, refreshToken } = await login(email, password);
+                authLogin(accessToken, refreshToken);
+                navigate('/posts');
             } else {
-                // Регистрация - здесь нужно добавить вызов API регистрации
-
                 const userData = {
                     email,
                     password,
-                    username: email.split('@')[0], // Генерируем username из email
+                    username: usernameFromEmail(email),
                     bio: null,
                     avatarUrl: null,
-                    birthDate: birthDate || null,
-                    gender: gender || null
+                    birthDate: toIso(birthDate),
+                    gender, // 'MALE' | 'FEMALE' | null
                 };
-
                 await usersApi.createUser(userData);
 
-                // После успешной регистрации автоматически входим
-                const response = await login(email, password);
-                authLogin(response.accessToken, response.refreshToken);
+                const { accessToken, refreshToken } = await login(email, password);
+                authLogin(accessToken, refreshToken);
                 navigate('/posts');
-                console.log('Регистрация:', userData);
-
             }
         } catch (error: any) {
-            setErrors({ submit: error.response?.data?.message || 'Ошибка авторизации' });
+            setErrors({ submit: error?.response?.data?.message || 'Ошибка авторизации' });
         } finally {
             setIsLoading(false);
         }
     };
+
 
     return (
         <div className="auth-modal-overlay">

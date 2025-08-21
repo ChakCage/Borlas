@@ -21,6 +21,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwt;
     private final org.example.backend.security.CustomUserDetailsService users; // у вас уже есть этот сервис
 
+
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // JWT нужен только для API
+        return !path.startsWith("/api/");
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
