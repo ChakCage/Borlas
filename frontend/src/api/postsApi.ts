@@ -44,6 +44,11 @@ export const postsApi = {
         return response.data
     },
 
+    getByAuthor: async (userId: string): Promise<OkResponse> => {
+        const response = await api.get<OkResponse>(`/posts/by-author/${userId}`);
+        return response.data;
+    },
+
     deletePost: async (id: string): Promise<void> => {
         await api.delete(`/posts/delete/${id}`)
     },

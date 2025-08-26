@@ -48,6 +48,12 @@ export const usersApi = {
         return data;
     },
 
+    getMe: async (): Promise<OkResponse<User>> => {
+        const { data } = await api.get<OkResponse<User>>('/users/me');
+        return data;
+    },
+
+
     /** POST /api/users/create */
     createUser: async (payload: {
         email: string;

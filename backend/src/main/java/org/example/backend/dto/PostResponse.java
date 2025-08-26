@@ -13,4 +13,5 @@ public class PostResponse {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
     private UUID authorId;
+    private String authorUsername;
 }

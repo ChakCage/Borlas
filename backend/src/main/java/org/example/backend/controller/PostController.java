@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.PostRequest;
 import org.example.backend.dto.PostResponse;
 import org.example.backend.dto.UnuversalOkResponce;
-import org.example.backend.exception.ConflictException;
 import org.example.backend.mapper.PostMapper;
 import org.example.backend.model.Post;
 import org.example.backend.model.User;
@@ -23,9 +22,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-/**
- * Контроллер для управления постами.
- */
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
@@ -35,106 +31,74 @@ public class PostController {
     private final UserRepository userRepo;
     private final PostMapper postMapper;
 
-    /**
-     * Создать новый пост.
-     *
-     * @param dto         данные поста
-     * @param userDetails текущий пользователь (автор поста)
-     * @return созданный пост
-     */
+    /** Создать пост — data: объект, статус 201 */
     @PostMapping("/create")
     public ResponseEntity<Map<String, Object>> create(@Valid @RequestBody PostRequest dto,
                                                       @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-        }
-        User author = userRepo.findByUsername(userDetails.getUsername()).orElseThrow();
-        var saved = postRepo.save(postMapper.toEntity(dto, author));
+        if (userDetails == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+
+        User author = userRepo.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Post saved = postRepo.save(postMapper.toEntity(dto, author));
 
         var ok = new UnuversalOkResponce(
-                List.of(postMapper.toDto(saved)),
+                postMapper.toDto(saved),
                 "Пост создан",
                 HttpStatus.CREATED.value() + " " + HttpStatus.CREATED.getReasonPhrase()
         );
+        return ResponseEntity.status(HttpStatus.CREATED).body(ok.getResponse());
+    }
+
+    /** Все посты — data: массив */
+    @GetMapping
+    public ResponseEntity<Map<String, Object>> getAll() {
+        List<PostResponse> postsList = postRepo.findAll()
+                .stream().map(postMapper::toDto).collect(Collectors.toList());
+        var ok = new UnuversalOkResponce(postsList, "Список постов получен", "200 OK");
         return ResponseEntity.ok(ok.getResponse());
     }
 
-    /**
-     * Получить список всех постов.
-     *
-     * @return список постов
-     */
-    @GetMapping
-    public ResponseEntity<Map<String, Object>> getAll() {
-        List<PostResponse> postsList = postRepo.findAll().stream().map(postMapper::toDto).collect(Collectors.toList());
-        var unuversalOkResponce = new UnuversalOkResponce(postsList, "Список постов получен", "200 OK");
-        return ResponseEntity.ok(unuversalOkResponce.getResponse());
-    }
-
-    /**
-     * Получить пост по id.
-     *
-     * @param id идентификатор поста
-     * @return найденный пост или ошибка
-     */
+    /** Пост по id — data: объект */
     @GetMapping("/{id}")
     public ResponseEntity<Map<String, Object>> getById(@PathVariable UUID id) {
-        var post = postRepo.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Post with id %s not found", id)));
-
-        var unuversalOkResponce = new UnuversalOkResponce(List.of(postMapper.toDto(post)), "Пост получен", "200 OK");
-        return ResponseEntity.ok(unuversalOkResponce.getResponse());
+        Post post = postRepo.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
+        var ok = new UnuversalOkResponce(postMapper.toDto(post), "Пост получен", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
     }
 
-    /**
-     * Обновить пост.
-     *
-     * @param id     идентификатор поста
-     * @param dto    новые данные поста
-     * @param userDetails текущий пользователь (чтобы сработала авторизация)
-     * @return обновлённый пост
-     */
-    @PutMapping("update/{id}")
+    /** Обновить — data: объект */
+    @PutMapping("/update/{id}")
     public ResponseEntity<Map<String, Object>> update(@PathVariable UUID id,
                                                       @Valid @RequestBody PostRequest dto,
                                                       @AuthenticationPrincipal UserDetails userDetails) {
-        if (userDetails == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
-        }
+        if (userDetails == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+
         return postRepo.findById(id)
                 .map(post -> {
                     post.setTitle(dto.getTitle());
                     post.setContent(dto.getContent());
                     post.setUpdatedDate(java.time.LocalDateTime.now());
-                    var saved = postRepo.save(post);
-                    var ok = new UnuversalOkResponce(List.of(postMapper.toDto(saved)), "Пост обновлён", "200 OK");
+                    Post saved = postRepo.save(post);
+                    var ok = new UnuversalOkResponce(postMapper.toDto(saved), "Пост обновлён", "200 OK");
                     return ResponseEntity.ok(ok.getResponse());
                 })
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Post with id %s not found", id)));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found"));
     }
 
-    /**
-     * Удалить пост по id.
-     *
-     * @param id идентификатор поста
-     * @return результат удаления
-     */
-    @DeleteMapping("delete/{id}")
+    /** Удалить — data: null (как и было) */
+    @DeleteMapping("/delete/{id}")
     public ResponseEntity<Map<String, Object>> delete(@PathVariable UUID id) {
         if (!postRepo.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, String.format("Post with id %s not found", id));
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Post not found");
         }
         postRepo.deleteById(id);
         var ok = new UnuversalOkResponce(null, "Пост удалён", "200 OK");
         return ResponseEntity.ok(ok.getResponse());
     }
 
-    /**
-     * Получить список удалённых постов.
-     *
-     * @param login имя пользователя или "admin"
-     * @return список удалённых постов
-     */
+    /** Удалённые / активные — оставил как было (массив) */
     @GetMapping("/deleted")
     public ResponseEntity<Map<String, Object>> getDeletedPosts(@RequestParam String login) {
         List<Post> posts = login.equals("admin")
@@ -143,18 +107,10 @@ public class PostController {
 
         var ok = new UnuversalOkResponce(
                 posts.stream().map(postMapper::toDto).collect(Collectors.toList()),
-                "Удалённые посты получены",
-                "200 OK"
-        );
+                "Удалённые посты получены", "200 OK");
         return ResponseEntity.ok(ok.getResponse());
     }
 
-    /**
-     * Получить список активных (не удалённых) постов.
-     *
-     * @param login имя пользователя или "admin"
-     * @return список активных постов
-     */
     @GetMapping("/active")
     public ResponseEntity<Map<String, Object>> getActivePosts(@RequestParam String login) {
         List<Post> posts = login.equals("admin")
@@ -163,9 +119,16 @@ public class PostController {
 
         var ok = new UnuversalOkResponce(
                 posts.stream().map(postMapper::toDto).collect(Collectors.toList()),
-                "Активные посты получены",
-                "200 OK"
-        );
+                "Активные посты получены", "200 OK");
+        return ResponseEntity.ok(ok.getResponse());
+    }
+
+    /** НОВОЕ: посты конкретного автора — data: массив */
+    @GetMapping("/by-author/{userId}")
+    public ResponseEntity<Map<String, Object>> getByAuthor(@PathVariable UUID userId) {
+        List<Post> posts = postRepo.findAllByAuthorIdAndDeletedDateIsNullOrderByCreatedDateDesc(userId);
+        var list = posts.stream().map(postMapper::toDto).toList();
+        var ok = new UnuversalOkResponce(list, "Посты автора получены", "200 OK");
         return ResponseEntity.ok(ok.getResponse());
     }
 }

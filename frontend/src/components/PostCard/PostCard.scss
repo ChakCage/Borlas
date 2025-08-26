@@ -6,15 +6,14 @@
   margin-bottom: 20px;
   transition: box-shadow 0.3s ease;
 
-  &:hover {
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-  }
+  &:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15); }
 
   &__header {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    justify-content: space-between; /* заголовок слева, мета справа */
+    align-items: center;
     margin-bottom: 16px;
+    gap: 12px;
   }
 
   &__title {
@@ -23,61 +22,81 @@
     font-weight: 600;
     color: #333;
     flex: 1;
-    margin-right: 16px;
   }
 
-  &__actions {
+  /* правая часть (автор + дата) */
+  &__meta {
     display: flex;
+    align-items: center;
     gap: 8px;
+    font-size: 0.9rem;
+    color: #777;
     flex-shrink: 0;
   }
 
-  &__btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &--edit {
-      background: #007bff;
-      color: white;
-
-      &:hover {
-        background: #0056b3;
-      }
-    }
-
-    &--delete {
-      background: #dc3545;
-      color: white;
-
-      &:hover {
-        background: #c82333;
-      }
-    }
+  &__avatar {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #c4c4c4;
   }
 
+  &__author { font-weight: 600; }
+
+  &__dot { opacity: .55; }
+
   &__content {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 
     p {
       margin: 0;
       line-height: 1.6;
       color: #555;
+      white-space: pre-wrap;
     }
   }
 
   &__footer {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 10px;
   }
 
-  &__date {
+  &__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &--edit {
+      background: #1677ff;
+      color: #fff;
+      &:hover { background: #0f5ed6; }
+    }
+
+    &--delete {
+      background: #dc3545;
+      color: #fff;
+      &:hover { background: #c82333; }
+    }
+  }
+
+  &__dates {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
     font-size: 0.875rem;
     color: #888;
   }
-} 
+
+  &__date { opacity: .9; }
+}

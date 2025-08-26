@@ -53,6 +53,23 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ok.getResponse());
     }
 
+
+    @GetMapping("/me")
+    public ResponseEntity<Map<String, Object>> me(@AuthenticationPrincipal UserDetails userDetails) {
+        if (userDetails == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized");
+        }
+        var user = repo.findByUsername(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        var ok = new UnuversalOkResponce(
+                UserMapper.toDto(user),
+                "Текущий пользователь получен",
+                "200 OK"
+        );
+        return ResponseEntity.ok(ok.getResponse());
+    }
+
     /**
      * Получить список всех пользователей.
      *

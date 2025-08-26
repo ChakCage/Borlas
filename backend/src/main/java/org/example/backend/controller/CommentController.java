@@ -6,6 +6,7 @@ import org.example.backend.dto.CommentRequest;
 import org.example.backend.dto.CommentResponse;
 import org.example.backend.dto.UnuversalOkResponce;
 import org.example.backend.mapper.CommentMapper;
+import org.example.backend.mapper.UserMapper;
 import org.example.backend.model.Comment;
 import org.example.backend.model.Post;
 import org.example.backend.model.User;
@@ -110,6 +111,8 @@ public class CommentController {
         var ok = new UnuversalOkResponce(commentMapper.toDto(comment), "Комментарий получен", "200 OK");
         return ResponseEntity.ok(ok.getResponse());
     }
+
+
 
     /**
      * Обновить комментарий (может только автор).

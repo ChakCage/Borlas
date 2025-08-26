@@ -1,39 +1,33 @@
-import React from 'react'
-import { Link, useLocation,useNavigate } from 'react-router-dom'
-import './Sidebar.scss'
-import { items } from './SideItems' // импортируем список
+import React from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import './Sidebar.scss';
+import { items } from './SideItems';
 import { useAuth } from '../../context/AuthContext';
 
 interface SidebarItemProps {
-    to: string
-    icon?: React.ReactNode // эмодзи :)
-    children: string
-    isActive: boolean
-}
-
-interface item{
     to: string;
-    icon: React.ReactNode | null;
-    label:string;
+    icon?: React.ReactNode; // эмодзи/иконка :)
+    children: string;
 }
 
-const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, children, isActive }) => {
+const SidebarItem: React.FC<SidebarItemProps> = ({ to, icon, children }) => {
     return (
-        // li дает возможность не рендерить страницу при переходе, взяли из 'react-router-dom'
         <li className="sidebar__item">
-            <Link to={to} className={`sidebar__link ${isActive ? 'sidebar__link--active' : ''}`}>
-                {/*В линке лежит to = раздел, класснейм линк, если нет линка - вернет на главную*/}
+            <NavLink
+                to={to}
+                end={to === '/'} // чтобы "/" не подсвечивался на всех маршрутах
+                className={({ isActive }) =>
+                    `sidebar__link${isActive ? ' sidebar__link--active' : ''}`
+                }
+            >
                 {icon && <span className="sidebar__icon">{icon}</span>}
-                {/*далее показывает иконку, если нет иконки - не рендерит span (0x0)*/}
-                {children} {/*children - string*/}
-            </Link>
+                {children}
+            </NavLink>
         </li>
-    )
-}
+    );
+};
 
 export const Sidebar: React.FC = () => {
-    const location = useLocation()
-
     const { isAuthenticated, logout } = useAuth();
     const navigate = useNavigate();
 
@@ -50,23 +44,23 @@ export const Sidebar: React.FC = () => {
 
             <nav className="sidebar__nav">
                 <ul className="sidebar__list">
-                    {/* мапом берем масив пунктов, ul - список */}
-                    {items.map(({ to, icon, label }: item) => (
-                        <SidebarItem key={to} to={to} icon={icon} isActive={location.pathname === to}>
+                    {items.map(({ to, icon, label }) => (
+                        <SidebarItem key={to} to={to} icon={icon}>
                             {label}
                         </SidebarItem>
                     ))}
                 </ul>
+
                 {isAuthenticated ? (
-                    <>
-                        <button onClick={handleLogout} className="sidebar__logout">
-                            Выйти
-                        </button>
-                    </>
+                    <button onClick={handleLogout} className="sidebar__logout">
+                        Выйти
+                    </button>
                 ) : (
-                    <Link to="/login" className="sidebar__link">Войти</Link>
+                    <NavLink to="/login" className="sidebar__link">
+                        Войти
+                    </NavLink>
                 )}
             </nav>
         </aside>
-    )
-}
+    );
+};

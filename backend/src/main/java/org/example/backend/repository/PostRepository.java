@@ -19,6 +19,9 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @Query("SELECT p FROM Post p WHERE p.deletedDate IS NOT NULL")
     List<Post> findAllDeleted();
 
+    List<Post> findAllByAuthorIdAndDeletedDateIsNullOrderByCreatedDateDesc(UUID authorId);
+
+
     @Query("SELECT p FROM Post p WHERE p.deletedDate IS NULL AND p.author.username = :username")
     List<Post> findActiveByUsername(@Param("username") String username);
 

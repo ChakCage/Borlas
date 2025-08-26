@@ -25,6 +25,7 @@ public class PostMapper {
         response.setCreatedDate(post.getCreatedDate());
         response.setUpdatedDate(post.getUpdatedDate());
         response.setAuthorId(post.getAuthor().getId());
+        response.setAuthorUsername(post.getAuthor().getUsername());
         return response;
     }
 }
