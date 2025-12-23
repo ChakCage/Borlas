@@ -14,7 +14,7 @@ import {TextButton} from "./components/TextButton/TextButton"
 import {ButtonTheme, TextButtonTheme} from "./types/BtnThemeEnum"
 
 function App() {
-    setAuthToken("testuser", "yourpassword")
+    setAuthToken("testuser1", "yourpassword")
 
     const onClickBtn = () => {
         // alert("Кнопка нажата")

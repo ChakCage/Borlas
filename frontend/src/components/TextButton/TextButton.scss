@@ -1,4 +1,4 @@
-@mixin text-button {
+@mixin mixin-text-button {
   // ширина
   width: fit-content;
   // текст
@@ -83,5 +83,5 @@
 }
 
 .text-button {
-  @include text-button
+  @include mixin-text-button
 }

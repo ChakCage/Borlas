@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import {postsApi, Post, CreatePostRequest, OkResponse} from '../../api/postsApi'
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit'
+import {CreatePostRequest, OkResponse, Post, postsApi} from '../../api/postsApi'
 
 interface PostsState {
   posts: Post[];
@@ -17,8 +17,7 @@ const initialState: PostsState = {
 export const fetchPosts = createAsyncThunk(
   'posts/fetchPosts',
   async () => {
-    const response = await postsApi.getAllPosts();
-    return response;
+    return await postsApi.getAllPosts();
   }
 );
 
@@ -41,8 +40,7 @@ export const fetchUserDeletedPosts = createAsyncThunk(
 export const createPost = createAsyncThunk(
   'posts/createPost',
   async (postData: CreatePostRequest) => {
-    const response = await postsApi.createPost(postData);
-    return response.data;
+    return await postsApi.createPost(postData);
   }
 );
 
@@ -119,26 +117,26 @@ const postsSlice = createSlice({
         state.isLoading = true;
         state.error = null;
       })
-      // .addCase(createPost.fulfilled, (state, action: PayloadAction<OkResponse>) => {
-      //   state.isLoading = false;
-      //   state.posts.unshift(action.payload.data);
-      // })
-      // .addCase(createPost.rejected, (state, action) => {
-      //   state.isLoading = false;
-      //   state.error = action.error.message || 'Ошибка создания поста';
-      // })
-      // // updatePost
-      // .addCase(updatePost.pending, (state) => {
-      //   state.isLoading = true;
-      //   state.error = null;
-      // })
-      // .addCase(updatePost.fulfilled, (state, action: PayloadAction<Post>) => {
-      //   state.isLoading = false;
-      //   const index = state.posts.findIndex(post => post.id === action.payload.id);
-      //   if (index !== -1) {
-      //     state.posts[index] = action.payload;
-      //   }
-      // })
+      .addCase(createPost.fulfilled, (state, action: PayloadAction<OkResponse>) => {
+        state.isLoading = false;
+        state.posts.unshift(action.payload.data[0]);
+      })
+      .addCase(createPost.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message || 'Ошибка создания поста';
+      })
+      // updatePost
+      .addCase(updatePost.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updatePost.fulfilled, (state, action: PayloadAction<Post>) => {
+        state.isLoading = false;
+        const index = state.posts.findIndex(post => post.id === action.payload.id);
+        if (index !== -1) {
+          state.posts[1] = action.payload;
+        }
+      })
       .addCase(updatePost.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.error.message || 'Ошибка обновления поста';

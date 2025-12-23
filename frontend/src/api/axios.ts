@@ -15,4 +15,4 @@ export const setAuthToken = (username: string, password: string) => {
 
 export const clearAuthToken = () => {
   delete api.defaults.headers.common['Authorization'];
-}; 
+};

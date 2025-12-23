@@ -9,8 +9,8 @@ export interface Post {
     authorId: string;
 }
 
-export interface OkResponse {
-    data: Post[]
+export interface OkResponse<DATA = Post[]> {
+    data: DATA
     message: string
     status: string
     error: string
@@ -37,8 +37,8 @@ export const postsApi = {
         return response.data
     },
 
-    updatePost: async (id: string, postData: CreatePostRequest): Promise<OkResponse> => {
-        const response = await api.put<OkResponse>(`/posts/update/${id}`, postData)
+    updatePost: async (id: string, postData: CreatePostRequest): Promise<OkResponse<Post>> => {
+        const response = await api.put<OkResponse<Post>>(`/posts/update/${id}`, postData)
         return response.data
     },
 
